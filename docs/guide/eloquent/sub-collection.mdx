@@ -1,0 +1,234 @@
+---
+sidebar_position: 9
+---
+
+# Sub collection
+
+## Retrieve documents from a sub collection
+
+### ``all()``
+
+```php
+$user = User::where(['id', '=', '123456789'])->firstOrFail();
+$profiles = $user->collection('Profile')->all();
+```
+
+### ``first()``
+
+```php
+$user = User::where(['id', '=', '123456789'])->firstOrFail();
+$profile = $user->collection('Profile')->first();
+```
+
+### ``firstOrFail()``
+
+```php
+$user = User::where(['id', '=', '123456789'])->firstOrFail();
+$profile = $user->collection('Profile')->firstOrFail();
+```
+
+### ``get()``
+
+```php
+$user = User::where(['id', '=', '123456789'])->firstOrFail();
+$profiles = $user->collection('Profile')->get();
+```
+
+### ``paginate()``
+
+```php
+$user = User::where(['id', '=', '123456789'])->firstOrFail();
+$profiles = $user->collection('Profile')->paginate();
+```
+
+:::warning
+Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
+:::
+
+### ``where()``
+
+```php
+$user = User::where(['id', '=', '123456789'])->firstOrFail();
+$profiles = $user->collection('Profile')->where('id', '=', '123456789')->get();
+```
+:::warning
+Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
+:::
+
+### ``orWhere()``
+
+```php
+$user = User::where(['id', '=', '123456789'])->firstOrFail();
+$profiles = $user->collection('Profile')->andWhere([['name', '=', 'John'], ['age' => 25]])->->get();
+```
+:::warning
+Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
+:::
+
+### ``andWhere()``
+
+```php  
+$user = User::where(['id', '=', '123456789'])->firstOrFail();
+$profiles = $user->collection('Profile')->andWhere([['name', '=', 'John'], ['age' => 25]])->->get();
+```
+
+## Create a document in a sub collection
+
+``create($data, $fillable, $required, $default, $fieldTypes, $id)``
+
+### Parameters
+
+- ``$data`` (array) - The data to create the document with
+- ``$fillable`` (array) - The fillable fields of the document. See [Fillable](/docs/guide/eloquent/model-configuration#fillable-property)
+- ``$required`` (array) - The required fields of the document. See [Required](/docs/guide/eloquent/model-configuration#required-property)
+- ``$default`` (array) - The default fields of the document. See [Default](/docs/guide/eloquent/model-configuration#default-property)
+- ``$fieldTypes`` (array) - The field types of the document. See [Field Types](/docs/guide/eloquent/model-configuration#field-types-property)
+- ``$id`` (string) - The id of the document. If not provided, a random id will be generated for the document.
+
+#### Example
+
+```php
+$user = User::where(['id', '=', '123456789'])->firstOrFail();
+
+$fillable = ['name', 'age'];
+$required = ['name'];
+$default = [];
+$fieldTypes = ['name' => 'string', 'age' => 'integer'];
+
+$newProfile = $user->collection('Profile')->create([
+    'name' => 'John',
+    'age' => 25
+], $fillable, $required, $default, $fieldTypes);
+
+echo $newProfile->name; // John
+echo $newProfile->age; // 25
+
+```
+
+## Update a document in a sub collection
+
+``update($data, $fillable, $required, $default, $fieldTypes)``
+
+### Parameters
+
+- ``$data`` (array) - The data to update the document with
+- ``$fillable`` (array) - The fillable fields of the document. See [Fillable](/docs/guide/eloquent/model-configuration#fillable-property)
+- ``$required`` (array) - The required fields of the document. See [Required](/docs/guide/eloquent/model-configuration#required-property)
+- ``$default`` (array) - The default fields of the document. See [Default](/docs/guide/eloquent/model-configuration#default-property)
+- ``$fieldTypes`` (array) - The field types of the document. See [Field Types](/docs/guide/eloquent/model-configuration#field-types-property)
+
+#### Example
+
+```php
+$user = User::where(['id', '=', '123456789'])->firstOrFail();
+
+$fillable = ['name', 'age'];
+$required = ['name'];
+$default = [];
+$fieldTypes = ['name' => 'string', 'age' => 'integer'];
+
+$profile = $user->collection('Profile')->where('id', '=', '123456789')->firstOrFail();
+
+$profile->update([
+    'name' => 'John',
+    'age' => 25
+], $fillable, $required, $default, $fieldTypes);
+
+echo $profile->name; // John
+echo $profile->age; // 25
+
+```
+
+## Delete a document in a sub collection
+
+``delete()``
+
+#### Example
+
+```php
+$user = User::where(['id', '=', '123456789'])->firstOrFail();
+
+$profile = $user->collection('Profile')->where('id', '=', '123456789')->firstOrFail();
+
+$profile->delete();
+
+```
+
+## Delete many documents in a sub collection
+
+:::warning
+Deleting many documents in a sub collection can take a long time if there are a lot of documents in the sub collection.
+:::
+
+
+``deleteMany()``
+
+#### Example
+
+```php
+$user = User::where(['id', '=', '123456789'])->firstOrFail();
+
+$user->collection('Profile')->where(['age', '>', 20])->deleteMany();
+
+```
+
+## Ordering documents in a sub collection
+
+:::warning
+Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
+:::
+
+``orderBy($field, $direction)``
+
+### Parameters
+
+- ``$field`` (string) - The field to order by
+- ``$direction`` (string) - The direction to order by. Can be ``ASC`` or ``DESC``
+
+#### Example
+
+```php
+$user = User::where(['id', '=', '123456789'])->firstOrFail();
+
+$profiles = $user->collection('Profile')->orderBy('age', 'DESC')->get();
+
+```
+
+## Limiting documents in a sub collection
+
+``limit($limit)``
+
+### Parameters
+
+- ``$limit`` (int) - The limit of documents to retrieve
+
+#### Example
+
+```php
+$user = User::where(['id', '=', '123456789'])->firstOrFail();
+
+$profiles = $user->collection('Profile')->limit(10);
+
+```
+
+## Paginating documents in a sub collection
+
+``paginate($limit, $pageName)``
+
+### Parameters
+
+- ``$limit`` (int) - The limit of documents to retrieve
+- ``$pageName`` (string) - The name of the page query string parameter
+
+#### Example
+
+```php
+$user = User::where(['id', '=', '123456789'])->firstOrFail();
+
+$profiles = $user->collection('Profile')->paginate(10, 'page');
+
+```
+
+## Conclusion
+
+That's it! You now know how to use sub collections in your Laravel application. If you have any issues or questions, please [open an issue on GitHub](https://github.com/FreddyWhest/firestore-eloquent/issues/new). 

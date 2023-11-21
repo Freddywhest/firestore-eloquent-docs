@@ -1,0 +1,134 @@
+---
+sidebar_position: 1
+---
+
+# Model Configuration
+
+## Model Properties in Firestore Eloquent Library
+
+In the Firestore Eloquent Library for Laravel, model properties play a significant role in defining the structure and behavior of your Firestore documents. Let's delve into various properties and their functionalities.
+
+## Collection Property
+
+The `$collection` property is used to define the name of the collection in which the model's documents will be stored. By default, the collection name is the plural form of the model's class name. For example, if the model's class name is `User`, the collection name will be `users`.
+
+```php
+class User extends FModel
+{
+    /**
+     * The collection name.
+     *
+     * @var string
+     */
+    protected $collection = 'users';
+}
+```
+
+```php
+// Subcollections
+class User extends FModel
+{
+    protected $collection = 'users/employees/admins';
+}
+```
+
+## Primary Key Property
+
+The `$primaryKey` property is used to define the name of the primary key of the model. By default, the primary key name is `id`.
+
+```php
+class User extends FModel
+{
+    /**
+     * The primary key name.
+     *
+     * @var string
+     */
+    protected $primaryKey = 'user_id';
+}
+```
+
+## Fillable Property
+
+The `$fillable` property is used to define the fields that can be mass-assigned. By default, all the fields are not fillable. When using the **create method** or **updateMany method** or **update method**, only the fields listed in fillable will be processed:
+
+```php
+class User extends FModel
+{
+    /**
+     * The fillable fields.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+    ];
+}
+```
+
+## Required Property
+
+The **``$required``** property lists fields that must be present in the data when **creating** or **updating** a document. If any of these fields are missing, an exception is thrown:
+
+```php
+class User extends FModel
+{
+    /**
+     * The required fields.
+     *
+     * @var array
+     */
+    protected $required = [
+        'name',
+        'email',
+        'password',
+    ];
+}
+```
+
+## Default Property
+
+The `$default` property is used to define the default values of the fields. If a field is not present in the data when **creating** a document, the default value will be used:
+
+```php
+class User extends FModel
+{
+    /**
+     * The default values.
+     *
+     * @var array
+     */
+    protected $default = [
+        'name' => 'John Doe',
+        'role' => 'user'
+    ];
+}
+```
+
+## Field Types Property
+
+The **``$fieldTypes``** property defines the expected data types for each field. This can be useful for validation and casting:
+
+:::info[SUPPORTED TYPES]
+`string`, `integer``array`, and `object`
+:::
+
+```php
+
+class User extends FModel
+{
+    /**
+     * The field types.
+     *
+     * @var array
+     */
+    protected $fieldTypes = [
+        'name' => 'string',
+        'age' => 'integer',
+        'hobbies' => 'array',
+        'address' => 'object',
+    ];
+}
+```

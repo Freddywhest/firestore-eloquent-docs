@@ -1,0 +1,33 @@
+---
+sidebar_position: 4
+---
+
+# Create Document
+
+## ``create()``
+
+The **``create()``** method allows you to add new documents to your Firestore collection. It is a powerful and flexible way to insert data into the database while adhering to the specified model rules and configurations.
+
+**``create(array $data, $id = '')``**
+
+### Parameters
+
+- **``$data``** (array) - The data to be inserted into the database. The data must be an associative array with the keys being the field names and the values being the field values. The data must adhere to the model rules and configurations.
+- **``$id``** (string) - The ID of the document to be created. If no ID is provided or ID already exists, a random ID will be generated.
+
+### Usage
+    
+```php
+$newUser = User::create(['name' => 'John', 'age' => 20]);
+```
+
+### Examples
+
+```php
+$newUser = User::create(['name' => 'John', 'age' => 20]);
+echo $newUser->name; //Result: John
+
+//Delete the newly created user
+$newUser->delete();
+```
+

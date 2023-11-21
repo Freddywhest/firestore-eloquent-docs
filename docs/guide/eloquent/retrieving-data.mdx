@@ -1,0 +1,240 @@
+---
+sidebar_position: 2
+---
+
+# Retrieving data
+
+The library provides flexible and convenient methods for retrieving documents from Firestore. Whether you want to retrieve all documents, filter based on specific criteria, or find a document by its ID.
+
+## Retrieving first documents
+
+### ``first()`` method
+
+The **``first()``** method is used to retrieve the first document from the Firestore database that matches the current query parameters. If there are multiple documents that meet the criteria, only the first one encountered will be returned. 
+
+```php
+// Retrieves the first user with age 20
+$user = User::where(['age' => 20])->first();
+```
+
+### ``firstOrFail()`` method
+
+The **``firstOrFail()``** method is used to retrieve the first document from the Firestore database that matches the current query parameters. If there are multiple documents that meet the criteria, only the first one encountered will be returned. If no document is found, an exception will be thrown.
+
+```php
+// Retrieves the first user with age 20
+$user = User::where(['age' => 20])->firstOrFail();
+```
+
+### ``find(string $documentId)`` method
+
+The **``find()``** method is used to retrieve a document from the Firestore database by its ID.
+
+```php
+// Retrieves the user with ID 123
+$user = User::find('123');
+```
+
+## Retrieving all documents
+
+Retrieving all documents from a Firestore collection is a common use case, and the Firestore Eloquent Library in Laravel simplifies this process with the ``all()`` method. This section will guide you through using this method and provide additional insights.
+
+### ``all()`` method
+
+The **``all()``** method is used to retrieve all documents from a Firestore collection. This method is useful when you want to retrieve all documents from a collection without any filtering or sorting.
+
+```php
+// Retrieves all users
+$users = User::all();
+```
+#### Example Use Case
+
+The **``all()``** method is useful when you want to retrieve all documents from a collection without any filtering or sorting.
+
+```php
+// UserController.php
+
+public function index()
+{
+    $users = User::all();
+
+    return view('users.index', compact('users'));
+}
+```
+
+```php
+// index.blade.php
+
+@foreach ($users as $user)
+    <p>This is user {{ $user->name }}</p>
+@endforeach
+```
+
+### Paginating Results
+
+If your Firestore collection contains a large number of documents, consider paginating the results to improve performance and user experience. Laravel provides a simple pagination feature that you can use in combination with the Firestore Eloquent Library.
+
+```php
+// UserController.php
+
+public function index()
+{
+    $users = User::paginate(10);
+
+    return view('users.index', compact('users'));
+}
+```
+
+```php
+// index.blade.php
+
+@foreach ($users as $user)
+    <p>This is user {{ $user->name }}</p>
+@endforeach
+
+{!! $users->links() !!}
+```
+
+The **``links()``** method generates the necessary pagination links for navigating through the result set. 
+
+:::info[MORE ABOUT PAGINATION]
+For more information about pagination, please refer to the [Laravel documentation](/docs/guide/eloquent/pagination).
+:::
+
+## Filtering Documents
+
+Filtering documents is a crucial aspect when working with Firestore, and the Firestore Eloquent Library in Laravel provides various methods to construct precise queries. Let's explore advanced techniques for filtering documents.
+
+:::warning
+Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
+:::
+
+### Basic Filtering with ``where()``
+The **``where()``** method allows you to filter documents based on one or more criteria. It takes an associative array where keys represent field names, and values represent the conditions:
+
+:::warning
+Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
+:::
+
+```php
+// Retrieve users with age 25
+$filteredUsers = User::where(['age', '=', 25])->get();
+```
+
+You can also use different comparison operators, such as ``'=', '==', '>', '<', '>=', and '<='``, to create more complex queries:
+
+```php
+
+// Retrieve users with age greater than 25
+$filteredUsers = User::where(['age', '>', 25])->get();
+
+// Retrieve users with age less than or equal to 25
+$filteredUsers = User::where(['age', '<=', 25])->get();
+```
+
+:::warning
+Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
+:::
+### Advanced Filtering with ``andWhere()`` and ``orWhere()``
+
+For more complex queries involving AND and OR conditions, you can use ``andWhere()`` and ``orWhere()`` methods:
+
+:::warning
+Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
+:::
+
+#### AND conditions
+
+```php
+// Retrieve users named 'John' and aged 25
+$andFilteredUsers = User::andWhere([['name', '=', 'John'], ['age' => 25]])->get();
+
+```
+
+#### OR conditions
+
+```php
+// Retrieve users named 'John' or aged 25
+$orFilteredUsers = User::orWhere([['name', '=', 'John'], ['age' => 25]])->get();
+
+```
+
+These methods provide a powerful way to construct intricate filters for your Firestore queries.
+
+### Ordering Results with ``orderBy()``, ``orderByDesc()``, and ``orderByAsc()``
+
+:::warning
+Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
+:::
+
+Sorting the results is often necessary, and you can achieve this using the ``orderBy()``, ``orderByDesc()``, and ``orderByAsc()`` methods:
+
+```php
+// Order users by ID in descending order
+$descOrderedUsers = User::orderByDesc('id')->get();
+
+// Order users by ID in ascending order
+$ascOrderedUsers = User::orderByAsc('id')->get();
+
+// Order users by ID in ascending order
+$orderedUsers = User::orderBy('id', 'ASC')->get();
+
+// Order users by ID in descending order
+$orderedUsers = User::orderBy('id', 'DESC')->get();
+```
+
+You can also combine ordering with filtering for more fine-grained control over your queries.
+
+### Chaining Methods
+
+One of the strengths of the library is the ability to chain methods, allowing you to build complex queries in a readable and expressive way:
+
+```php
+// Retrieve users with age 25, ordered by ID in descending order
+$filteredAndOrderedUsers = User::where(['age', '=', 25])->orderByDesc('id')->get();
+
+```
+
+Chaining methods makes it easy to construct queries dynamically based on your application's needs.
+
+## Determining If Records Exist
+
+Sometimes you may need to determine if any records exist in a collection. The Firestore Eloquent Library provides a convenient ``exists()`` method that you can use to check if any records exist in a collection:
+
+```php
+// Check if any users exist
+$documentId = '1234567890'; // The ID of the document to retrieve
+$user = User::find($documentId);
+$exists = $user->exists(); // return bool [true/false]
+```
+
+```php
+// Check if any users exist
+
+$user = User::where(['user_id', '=', 2])->first();
+$exists = $user->exists(); // return bool [true/false]
+```
+
+## Limiting Results
+
+The Firestore Eloquent Library provides a convenient ``limit()`` method that you can use to limit the number of documents returned by a query:
+
+```php
+// Retrieve the first 10 users
+$users = User::limit(10);
+```
+
+```php
+// Retrieve the first 10 users with age 25
+$users = User::where(['age', '=', 25])->limit(10);
+```
+
+```php
+// Retrieve the first 10 users with age 25, ordered by ID in descending order
+$users = User::where(['age', '=', 25])->orderByDesc('age')->limit(10);
+```
+
+```php
+// Retrieve the first 10 users with age 25, ordered by ID in descending order
+$users = User::where(['age', '=', 25])->orderByDesc('age')->limit(10);
+```
