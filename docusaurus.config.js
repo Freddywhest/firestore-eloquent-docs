@@ -62,15 +62,15 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       // Replace with your project's social card
-      image: 'img/docusaurus-social-card.jpg',
-      announcementBar: {
+      image: 'img/logo_card.png',
+      /* announcementBar: {
         id: 'support_us',
         content:
           'We are looking to revamp our docs, please fill <a target="_blank" rel="noopener noreferrer" href="#">this survey</a>',
         backgroundColor: '#e8d7ff',
         textColor: '#091E42',
         isCloseable: false,
-      },
+      }, */
       navbar: {
         title: 'Firestore Eloquent',
         logo: {
