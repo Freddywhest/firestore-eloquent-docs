@@ -43,9 +43,11 @@ Let's update the ``age`` field of the document with the ``id`` ``1234`` in the `
 // Update a user with the specified ID
 $userId = '1234';
 $user = User::find($userId);
-$user->update([
+$updatedUser = $user->update([
     'age' => 30
 ]);
+
+echo $updatedUser->age; // 30
 
 ```
 
@@ -57,18 +59,26 @@ You can also update multiple fields of a document. Let's update the ``status`` a
 // Update a user with the specified ID
 // Update a user with the specified ID
 $user = User::where(['user_id', '=', $userId])->first();
-$user->update([
+$updatedUser = $user->update([
     'age' => 30, 
     'status' => 'inactive'
 ]);
+
+echo $updatedUser->age; // 30
+echo $updatedUser->status; // inactive
+
 ```
 
 ```php
 // Update a user with the specified ID
 $user = User::where(['user_id', '=', $userId])->firstOrFail();
-$user->update([
+$updatedUser = $user->update([
     'age' => 30, 
     'status' => 'inactive'
 ]);
+
+echo $updatedUser->age; // 30
+echo $updatedUser->status; // inactive
+
 ```
 

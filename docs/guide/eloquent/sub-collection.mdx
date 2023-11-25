@@ -20,6 +20,8 @@ $user = User::where(['id', '=', '123456789'])->firstOrFail();
 $profile = $user->collection('Profile')->first();
 ```
 
+It accepts all Methods from [Retrieve documents](/docs/guide/eloquent/retrieving-data).
+
 ### ``firstOrFail()``
 
 ```php
@@ -27,12 +29,16 @@ $user = User::where(['id', '=', '123456789'])->firstOrFail();
 $profile = $user->collection('Profile')->firstOrFail();
 ```
 
+It accepts all Methods from [Retrieve documents](/docs/guide/eloquent/retrieving-data).
+
 ### ``get()``
 
 ```php
 $user = User::where(['id', '=', '123456789'])->firstOrFail();
 $profiles = $user->collection('Profile')->get();
 ```
+
+It accepts all Methods from [Retrieve documents](/docs/guide/eloquent/retrieving-data).
 
 ### ``paginate()``
 
@@ -49,7 +55,7 @@ Make sure you add the filter fields to the Firestore indexes to avoid errors. [R
 
 ```php
 $user = User::where(['id', '=', '123456789'])->firstOrFail();
-$profiles = $user->collection('Profile')->where('id', '=', '123456789')->get();
+$profiles = $user->collection('Profile')->where(['id', '=', '123456789'])->get();
 ```
 :::warning
 Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
@@ -59,7 +65,7 @@ Make sure you add the filter fields to the Firestore indexes to avoid errors. [R
 
 ```php
 $user = User::where(['id', '=', '123456789'])->firstOrFail();
-$profiles = $user->collection('Profile')->andWhere([['name', '=', 'John'], ['age' => 25]])->->get();
+$profiles = $user->collection('Profile')->andWhere([['name', '=', 'John'], ['age' => 25]])->get();
 ```
 :::warning
 Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
@@ -69,7 +75,7 @@ Make sure you add the filter fields to the Firestore indexes to avoid errors. [R
 
 ```php  
 $user = User::where(['id', '=', '123456789'])->firstOrFail();
-$profiles = $user->collection('Profile')->andWhere([['name', '=', 'John'], ['age' => 25]])->->get();
+$profiles = $user->collection('Profile')->andWhere([['name', '=', 'John'], ['age' => 25]])->get();
 ```
 
 ## Create a document in a sub collection
@@ -78,12 +84,12 @@ $profiles = $user->collection('Profile')->andWhere([['name', '=', 'John'], ['age
 
 ### Parameters
 
-- ``$data`` (array) - The data to create the document with
-- ``$fillable`` (array) - The fillable fields of the document. See [Fillable](/docs/guide/eloquent/model-configuration#fillable-property)
-- ``$required`` (array) - The required fields of the document. See [Required](/docs/guide/eloquent/model-configuration#required-property)
-- ``$default`` (array) - The default fields of the document. See [Default](/docs/guide/eloquent/model-configuration#default-property)
-- ``$fieldTypes`` (array) - The field types of the document. See [Field Types](/docs/guide/eloquent/model-configuration#field-types-property)
-- ``$id`` (string) - The id of the document. If not provided, a random id will be generated for the document.
+- ``$data`` (array) **(required)** - The data to create the document with
+- ``$fillable`` (array) **(required)** - The fillable fields of the document. See [Fillable](/docs/guide/eloquent/model-configuration#fillable-property)
+- ``$required`` (array) **(optional)** - The required fields of the document. See [Required](/docs/guide/eloquent/model-configuration#required-property)
+- ``$default`` (array) **(optional)** - The default fields of the document. See [Default](/docs/guide/eloquent/model-configuration#default-property)
+- ``$fieldTypes`` (array) **(optional)** - The field types of the document. See [Field Types](/docs/guide/eloquent/model-configuration#field-types-property)
+- ``$primaryKey`` (string) **(optional)** - The primaryKey of the document. If not provided, the primary key will be ``'id'``.
 
 #### Example
 
@@ -94,11 +100,12 @@ $fillable = ['name', 'age'];
 $required = ['name'];
 $default = [];
 $fieldTypes = ['name' => 'string', 'age' => 'integer'];
+$primaryKey = 'id';
 
 $newProfile = $user->collection('Profile')->create([
     'name' => 'John',
     'age' => 25
-], $fillable, $required, $default, $fieldTypes);
+], $fillable, $required, $default, $fieldTypes, $primaryKey);
 
 echo $newProfile->name; // John
 echo $newProfile->age; // 25
@@ -107,15 +114,15 @@ echo $newProfile->age; // 25
 
 ## Update a document in a sub collection
 
-``update($data, $fillable, $required, $default, $fieldTypes)``
+``updateSubDocument($data, $fillable, $required, $default, $fieldTypes, $primaryKey)``
 
 ### Parameters
 
-- ``$data`` (array) - The data to update the document with
-- ``$fillable`` (array) - The fillable fields of the document. See [Fillable](/docs/guide/eloquent/model-configuration#fillable-property)
-- ``$required`` (array) - The required fields of the document. See [Required](/docs/guide/eloquent/model-configuration#required-property)
-- ``$default`` (array) - The default fields of the document. See [Default](/docs/guide/eloquent/model-configuration#default-property)
-- ``$fieldTypes`` (array) - The field types of the document. See [Field Types](/docs/guide/eloquent/model-configuration#field-types-property)
+- ``$data`` (array) **(required)** - The data to update the document with
+- ``$fillable`` (array) **(required)** - The fillable fields of the document. See [Fillable](/docs/guide/eloquent/model-configuration#fillable-property)
+- ``$required`` (array) **(optional)** - The required fields of the document. See [Required](/docs/guide/eloquent/model-configuration#required-property)
+- ``$fieldTypes`` (array) **(optional)** - The field types of the document. See [Field Types](/docs/guide/eloquent/model-configuration#field-types-property)
+- ``$primaryKey`` (string) (default = ``'id'``) **(required if primaryKey is not ``'id'``)** - The primary key of the document. If not provided, the primary key of the model will be used.
 
 #### Example
 
@@ -126,16 +133,17 @@ $fillable = ['name', 'age'];
 $required = ['name'];
 $default = [];
 $fieldTypes = ['name' => 'string', 'age' => 'integer'];
+$primaryKey = 'id';
 
-$profile = $user->collection('Profile')->where('id', '=', '123456789')->firstOrFail();
+$profile = $user->collection('Profile')->where(['id', '=', '123456789'])->firstOrFail();
 
-$profile->update([
+$updatedProfile = $profile->updateSubDocument([
     'name' => 'John',
     'age' => 25
-], $fillable, $required, $default, $fieldTypes);
+], $fillable, $required, $fieldTypes, $primaryKey);
 
-echo $profile->name; // John
-echo $profile->age; // 25
+echo $updatedProfile->name; // John
+echo $updatedProfile->age; // 25
 
 ```
 
@@ -148,7 +156,7 @@ echo $profile->age; // 25
 ```php
 $user = User::where(['id', '=', '123456789'])->firstOrFail();
 
-$profile = $user->collection('Profile')->where('id', '=', '123456789')->firstOrFail();
+$profile = $user->collection('Profile')->where(['id', '=', '123456789'])->firstOrFail();
 
 $profile->delete();
 

@@ -15,6 +15,9 @@ The **``first()``** method is used to retrieve the first document from the Fires
 ```php
 // Retrieves the first user with age 20
 $user = User::where(['age' => 20])->first();
+
+// Retrieves the first user without any filters
+$user = User::first();
 ```
 
 ### ``firstOrFail()`` method
@@ -24,6 +27,9 @@ The **``firstOrFail()``** method is used to retrieve the first document from the
 ```php
 // Retrieves the first user with age 20
 $user = User::where(['age' => 20])->firstOrFail();
+
+// Retrieves the first user without any filters
+$user = User::firstOrFail();
 ```
 
 ### ``find(string $documentId)`` method
