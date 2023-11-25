@@ -29,11 +29,8 @@
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
 
-.heroBanner_src-pages-index-module{
-  padding: 22rem 0 !important;
-}
 
-.hero--primary{
-  background: rgb(71, 71, 71) !important;
-  background: radial-gradient(circle, rgb(238, 237, 174) 0%, rgb(148, 233, 226) 100%) !important;
-}
+/* .hero--primary{
+  background: rgb(40,192,255);
+  background: radial-gradient(circle, rgba(40,192,255,1) 48%, rgba(255,255,255,1) 49%, rgba(255,77,77,1) 50%);
+} */

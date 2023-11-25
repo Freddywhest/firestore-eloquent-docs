@@ -10,8 +10,9 @@ import styles from './index.module.css';
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
   return (
-    <header className={clsx('hero hero--primary', styles.heroBanner)}>
+    <header style={{ background: 'radial-gradient(circle, rgba(40,192,255,1) 48%, rgba(255,255,255,1) 49%, rgba(255,77,77,1) 50%)' }} className={clsx('hero hero--primary', styles.heroBanner)}>
       <div className="container">
+          <img src={'img/logo_card.png'} alt="Firestore Eloquent Logo" />
         <Heading as="h1" className="hero__title">
           {siteConfig.title}
         </Heading>
@@ -64,7 +65,13 @@ export default function Home() {
   return (
     <Layout
       title={`Home`}
-      description="Description will go into a meta tag in <head />">
+      description="Laravel Eloquent for firestore.">
+        {/* <span style={{ paddingTop: '10px', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+          <h2>🎉</h2>
+          <h1 style={{ background: 'linear-gradient(343deg, rgba(180,58,58,1) 28%, rgba(2,130,255,1) 49%, rgba(252,69,69,1) 78%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>
+              Firestore Eloquent 1.2 is here!
+          </h1>
+        </span> */}
       <HomepageHeader />
       <main>
         <HomepageFeatures />
