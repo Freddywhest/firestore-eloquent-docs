@@ -1,3 +1,74 @@
 ---
 sidebar_position: 10
 ---
+
+# toArray
+This method is recommended when working with APIs or InertiaJS. It converts the returned data to an array.
+
+## Example with **``find()``** method
+
+```php
+To convert the returned data to an array, you can use the `toArray` method.
+
+```php
+$user = User::find(1);
+
+// Convert the user to an array
+$user->toArray();
+```
+
+## Example with **``get()``** method and filtering
+To convert the returned data to an array, you can use the `toArray` method.
+
+```php
+
+$users = User::get();
+
+// Convert the users to an array
+$users->toArray();
+
+//Filtering
+$user = User::where(['id', "=", 1])->get();
+
+// Convert the user to an array
+$user->toArray();
+```
+
+## Example with **``all()``** method
+To convert the returned data to an array, you can use the `toArray` method.
+
+```php
+
+$users = User::all();
+
+// Convert the users to an array
+$users->toArray();
+```
+
+## Example with **``first()``** and **``firstOrFail()``** method
+To convert the returned data to an array, you can use the `toArray` method.
+
+```php
+
+$user = User::first();
+
+// Convert the user to an array
+$user->toArray();
+
+$user = User::firstOrFail();
+
+// Convert the user to an array
+$user->toArray();
+
+//Filtering
+$user = User::where(['id', "=", 1])->first();
+
+// Convert the user to an array
+$user->toArray();
+
+//Filtering
+$user = User::where(['id', "=", 1])->firstOrFail();
+
+// Convert the user to an array
+$user->toArray();
+```
