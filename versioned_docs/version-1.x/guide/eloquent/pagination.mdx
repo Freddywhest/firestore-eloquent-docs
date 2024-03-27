@@ -8,11 +8,6 @@ sidebar_position: 7
 
 Pagination is a crucial feature when dealing with large datasets, and the Firestore Eloquent Library in Laravel provides easy-to-use methods for paginating query results. Let's explore how to implement pagination using the library.
 
-:::info[Note]
-With version >= 2.x of this Library, if you want to return an **array** of paginated data instead of **html** , you can pass the **array** as an argument to the **links()** method. Example ``$users->links('array')``. This will return an array of pagination links instead of HTML. <br />
-**See more examples below.**
-:::
-
 ## Paginating Results with ``paginate()``
 
 The **``paginate()``** method allows you to retrieve a specific number of documents per page, making it easier to navigate through large result sets.
@@ -45,48 +40,6 @@ $users->links();
 $users->pagination();
 ```
 
-### Array Pagination
-> Credit to **[Oburusule Dunstan](https://github.com/alsong)** for the array pagination implementation.<br />
-
-You can return an array of paginated data instead of HTML by passing the ``array`` as an argument to the ``links()`` method:<br />
-It is important to note that the array pagination is only available in **``version >= 2.x``** of this library and it is recommended when working with APIs or InertiaJS applications where you need to return the pagination links as an array.
-
-```php
-// Paginate all users with 10 users per page
-$users = User::paginate(10);
-
-// Get pagination links as an array
-$users->links('array');
-
-//Results
-/* 
- [▼
-  "links" => [
-    [▼
-      "url" => "http://127.0.0.1:8000/?page=1"
-      "label" => "1"
-      "active" => true
-    ]
-    [▼
-      "url" => "http://127.0.0.1:8000/?page=2"
-      "label" => "2"
-      "active" => false
-    ]
-  ]
-  "prev" => null
-  "next" => "http://127.0.0.1:8000/?page=2"
-  "total_pages" => 2
-  "per_page" => 4
-  "current_page" => 1
-  "last_page" => 2
-  "total_data" => 8
-]
-*/
-```
-
-This will return an array of pagination links instead of HTML.
-
-
 ### Customizing Page Parameter Name
 
 By default, the page query parameter name is ``page``. You can customize this by passing the name of the page query parameter as the second argument to the ``paginate()`` method:
@@ -108,9 +61,7 @@ You can access the paginated data and other useful information:
 
 ```php
 // Accessing paginated data
-$data = $users->data(); // Object of user data for the current page
-
-$data = $users->toArray(); // Array of user data for the current page
+$data = $users->data(); // Array of user data for the current page
 ```
 
 ### Displaying Pagination Links
@@ -157,10 +108,10 @@ You can access the paginated data and other useful information:
 
 ```php
 // Accessing paginated data
-$data = $filteredUsers->data(); // User data for the current page
+$data = $filteredUsers->data(); // Array of user data for the current page
 ```
 
-### Displaying Pagination Links in your blade/html file
+### Displaying Pagination Links
 
 You can display the pagination links using the ``links()`` method:
 
@@ -171,10 +122,10 @@ You can display the pagination links using the ``links()`` method:
 {!! $filteredUsers->links() !!}
 
 // bootstrap theme
-{!! $filteredUsers->links(theme: 'bootstrap') !!}
+{!! $filteredUsers->links('bootstrap') !!}
 
 // tailwind theme
-{!! $filteredUsers->links(theme: 'tailwind') !!}
+{!! $filteredUsers->links('tailwind') !!}
 ```
 
 ### Displaying Pagination Information
@@ -207,7 +158,6 @@ $filteredUsers->pagination()
     "total" => 20   ,
 ];
 */
-
 ```
 
 ## Pagination Methods
@@ -231,7 +181,7 @@ The following methods are available on the ``paginate()`` method:
 | `url($page)`            | Returns the URL for a specific page.                                                             |
 | `total()`               | Returns the total number of items.                                                               |
 | `getPageName()`         | Returns the name of the page query parameter.                                                    |
-| `links($type="html", $theme = null)`  | Returns HTML pagination links by default. Pass `array` as an argument to return an array of pagination links. Themes available are `null`, `bootstrap`, and `tailwind`. |
+| `links($theme = null)`  | Returns HTML pagination links.                                                                   |
 
 ## Pagination Themes
 
@@ -239,7 +189,7 @@ The following pagination themes are available:
 
 | Theme                    | Description                                                                                     |
 |--------------------------|-------------------------------------------------------------------------------------------------|
-| `null`                   | Default theme by firestore eloquent library.                                                    |
+| `default`                | Default theme by firestore eloquent library.                                                    |
 | `bootstrap`              | Bootstrap theme.                                                                                |
 | `tailwind`               | Tailwind theme.                                                                                 |
 

@@ -4,11 +4,6 @@ sidebar_position: 6
 
 # Relationships
 
-:::warning[Warning]
-Relationships are still under development and very slow. Please use with caution.<br />
-Contributions are welcome to improve the performance.
-:::
-
 ## ``hasOne`` Relationship
 
 The ``hasOne`` relationship is used to define a one-to-one relationship between two models. For example, a ``User`` model might have one ``Phone`` model:
@@ -36,7 +31,7 @@ Once the relationship is defined, you can access the related model using the has
 $user = User::find('user1');
 
 // Access the user's profile
-$profile = $user->data()->hasOne('Profile', 'user_id', 'id');
+$profile = $user->hasOne('Profile', 'user_id', 'id');
 
 ```
 
@@ -49,7 +44,7 @@ use App\FModel\Profile;
 $user = User::find('user1');
 
 // Access the user's profile using the Profile model class
-$profile = $user->data()->hasOne(Profile::class, 'user_id', 'id');
+$profile = $user->hasOne(Profile::class, 'user_id', 'id');
 ```
 
 ### Example 2: Retrieving User and Profile with ``first()`` and ``firstOrFail()``
@@ -61,7 +56,7 @@ $profile = $user->data()->hasOne(Profile::class, 'user_id', 'id');
 $user = User::where(['user_id', '=', 'user1'])->first();
 
 // Access the user's profile
-$profile = $user->data()->hasOne('Profile', 'user_id', 'id');
+$profile = $user->hasOne('Profile', 'user_id', 'id');
 ```
 
 #### Using ``firstOrFail()`` method:
@@ -71,7 +66,7 @@ $profile = $user->data()->hasOne('Profile', 'user_id', 'id');
 $user = User::where(['user_id', '=', 'user1'])->firstOrFail();
 
 // Access the user's profile
-$profile = $user->data()->hasOne('Profile', 'user_id', 'id');
+$profile = $user->hasOne('Profile', 'user_id', 'id');
 ```
 
 ### Example 3: Retrieving Users and Their Profiles with get(), all(), and paginate()
@@ -84,7 +79,7 @@ $users = User::where(['user_id', '=', 'user1'])->get();
 
 // Display user information in Blade
 @foreach ($users as $user)
-    <h1>{{ $user->data()->hasOne('Profile', 'user_id', 'id')->email }}</h1>
+    <h1>{{ $user->hasOne('Profile', 'user_id', 'id')->email }}</h1>
 @endforeach
 ```
 
@@ -96,7 +91,7 @@ $users = User::all();
 
 // Display user information in Blade
 @foreach ($users as $user)
-    <h1>{{ $user->data()->hasOne('Profile', 'user_id', 'id')->email }}</h1>
+    <h1>{{ $user->hasOne('Profile', 'user_id', 'id')->email }}</h1>
 @endforeach
 ```
 
@@ -144,7 +139,7 @@ Once the relationship is defined, you can access the related model using the has
 $user = User::find('user1');
 
 // Access the user's profile
-$posts = $user->data()->hasMany('Post', 'user_id', 'id');
+$posts = $user->hasMany('Post', 'user_id', 'id');
 
 //Blade rendering
 @foreach ($posts as $post)
@@ -163,7 +158,7 @@ $users = User::where(['user_id', '=', 'user1'])->get();
 // Display user information in Blade
 @foreach ($users as $user)
     @php
-        $posts = $user->data()->hasMany('Profile', 'user_id', 'id') 
+        $posts = $user->hasMany('Profile', 'user_id', 'id') 
     @endphp
 
     @foreach ($posts as $post)
@@ -180,7 +175,7 @@ $users = User::where(['user_id', '=', 'user1'])->get();
 $users = User::all();
 
 // Display user information in Blade
-@foreach ($users->data() as $user)
+@foreach ($users as $user)
     @php
         $posts = $user->hasMany('Profile', 'user_id', 'id') 
     @endphp

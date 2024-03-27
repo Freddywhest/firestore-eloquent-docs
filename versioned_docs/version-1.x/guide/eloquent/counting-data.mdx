@@ -1,0 +1,42 @@
+---
+sidebar_position: 8
+---
+
+# Counting Documents
+
+## Counting Documents in Firestore Eloquent Library
+
+Counting documents is a common operation to retrieve the number of records that match certain conditions. The Firestore Eloquent Library in Laravel provides a straightforward way to count documents based on specified criteria. Let's explore how to count documents using the library's features.
+
+### Counting All Documents
+
+To count all documents in a Firestore collection, you can use the **``count()``** method:
+
+```php
+// Count all users
+$totalUsers = User::count();
+```
+
+### Counting Documents with Conditions
+
+You can also count documents based on certain conditions. For example, to count all users with the name "John Doe", you can use the **``where()``** method:
+
+```php
+// Count all users with the name "John Doe"
+$totalUsers = User::where('name', 'John Doe')->count();
+```
+
+### Counting Documents with Multiple Conditions
+
+You can also count documents based on multiple conditions. For example, to count all users with the name "John Doe" and the age of 30, you can use the **``andWhere()``** method or the **``orWhere()``** method:
+
+```php
+// Count all users with the name "John Doe" and the age of 30
+$totalUsers = User::where(['name', '=', 'John Doe'], ['age', '>', '30'])->count();
+
+// Count all users with the name "John Doe" or the age of 30
+$totalUsers = User::orWhere(['age', '>', '30'], ['name', '=', 'John Doe'])->count();
+```
+
+## Conclusion
+Counting documents in Firestore with the Firestore Eloquent Library is a simple yet powerful operation. Whether you need to count all documents, apply conditions for counting, or work with soft-deleted records, the library provides convenient methods for these scenarios. Choose the method that best fits your application's requirements and use it to efficiently retrieve document counts based on specified criteria.

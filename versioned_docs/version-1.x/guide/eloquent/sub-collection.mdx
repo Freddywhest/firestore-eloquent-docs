@@ -10,14 +10,14 @@ sidebar_position: 9
 
 ```php
 $user = User::where(['id', '=', '123456789'])->firstOrFail();
-$profiles = $user->data()->collection('Profile')->all();
+$profiles = $user->collection('Profile')->all();
 ```
 
 ### ``first()``
 
 ```php
 $user = User::where(['id', '=', '123456789'])->firstOrFail();
-$profile = $user->data()->collection('Profile')->first();
+$profile = $user->collection('Profile')->first();
 ```
 
 It accepts all Methods from [Retrieve documents](/docs/guide/eloquent/retrieving-data).
@@ -26,7 +26,7 @@ It accepts all Methods from [Retrieve documents](/docs/guide/eloquent/retrieving
 
 ```php
 $user = User::where(['id', '=', '123456789'])->firstOrFail();
-$profile = $user->data()->collection('Profile')->firstOrFail();
+$profile = $user->collection('Profile')->firstOrFail();
 ```
 
 It accepts all Methods from [Retrieve documents](/docs/guide/eloquent/retrieving-data).
@@ -35,7 +35,7 @@ It accepts all Methods from [Retrieve documents](/docs/guide/eloquent/retrieving
 
 ```php
 $user = User::where(['id', '=', '123456789'])->firstOrFail();
-$profiles = $user->data()->collection('Profile')->get();
+$profiles = $user->collection('Profile')->get();
 ```
 
 It accepts all Methods from [Retrieve documents](/docs/guide/eloquent/retrieving-data).
@@ -44,7 +44,7 @@ It accepts all Methods from [Retrieve documents](/docs/guide/eloquent/retrieving
 
 ```php
 $user = User::where(['id', '=', '123456789'])->firstOrFail();
-$profiles = $user->data()->collection('Profile')->paginate();
+$profiles = $user->collection('Profile')->paginate();
 ```
 
 :::warning
@@ -55,7 +55,7 @@ Make sure you add the filter fields to the Firestore indexes to avoid errors. [R
 
 ```php
 $user = User::where(['id', '=', '123456789'])->firstOrFail();
-$profiles = $user->data()->collection('Profile')->where(['id', '=', '123456789'])->get();
+$profiles = $user->collection('Profile')->where(['id', '=', '123456789'])->get();
 ```
 :::warning
 Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
@@ -65,7 +65,7 @@ Make sure you add the filter fields to the Firestore indexes to avoid errors. [R
 
 ```php
 $user = User::where(['id', '=', '123456789'])->firstOrFail();
-$profiles = $user->data()->collection('Profile')->andWhere([['name', '=', 'John'], ['age' => 25]])->get();
+$profiles = $user->collection('Profile')->andWhere([['name', '=', 'John'], ['age' => 25]])->get();
 ```
 :::warning
 Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
@@ -75,7 +75,7 @@ Make sure you add the filter fields to the Firestore indexes to avoid errors. [R
 
 ```php  
 $user = User::where(['id', '=', '123456789'])->firstOrFail();
-$profiles = $user->data()->collection('Profile')->andWhere([['name', '=', 'John'], ['age' => 25]])->get();
+$profiles = $user->collection('Profile')->andWhere([['name', '=', 'John'], ['age' => 25]])->get();
 ```
 
 ## Create a document in a sub collection
@@ -102,13 +102,13 @@ $default = [];
 $fieldTypes = ['name' => 'string', 'age' => 'integer'];
 $primaryKey = 'id';
 
-$newProfile = $user->data()->collection('Profile')->create([
+$newProfile = $user->collection('Profile')->create([
     'name' => 'John',
     'age' => 25
 ], $fillable, $required, $default, $fieldTypes, $primaryKey);
 
-echo $newProfile->data()->name; // John
-echo $newProfile->data()->age; // 25
+echo $newProfile->name; // John
+echo $newProfile->age; // 25
 
 ```
 
@@ -135,9 +135,9 @@ $default = [];
 $fieldTypes = ['name' => 'string', 'age' => 'integer'];
 $primaryKey = 'id';
 
-$profile = $user->data()->collection('Profile')->where(['id', '=', '123456789'])->firstOrFail();
+$profile = $user->collection('Profile')->where(['id', '=', '123456789'])->firstOrFail();
 
-$updatedProfile = $profile->data()->updateSubDocument([
+$updatedProfile = $profile->updateSubDocument([
     'name' => 'John',
     'age' => 25
 ], $fillable, $required, $fieldTypes, $primaryKey);
@@ -156,9 +156,9 @@ echo $updatedProfile->age; // 25
 ```php
 $user = User::where(['id', '=', '123456789'])->firstOrFail();
 
-$profile = $user->data()->collection('Profile')->where(['id', '=', '123456789'])->firstOrFail();
+$profile = $user->collection('Profile')->where(['id', '=', '123456789'])->firstOrFail();
 
-$profile->data()->delete();
+$profile->delete();
 
 ```
 
@@ -176,7 +176,7 @@ Deleting many documents in a sub collection can take a long time if there are a 
 ```php
 $user = User::where(['id', '=', '123456789'])->firstOrFail();
 
-$user->data()->collection('Profile')->where(['age', '>', 20])->deleteMany();
+$user->collection('Profile')->where(['age', '>', 20])->deleteMany();
 
 ```
 
@@ -198,7 +198,7 @@ Make sure you add the filter fields to the Firestore indexes to avoid errors. [R
 ```php
 $user = User::where(['id', '=', '123456789'])->firstOrFail();
 
-$profiles = $user->data()->collection('Profile')->orderBy('age', 'DESC')->get()->data();
+$profiles = $user->collection('Profile')->orderBy('age', 'DESC')->get();
 
 ```
 
@@ -215,7 +215,7 @@ $profiles = $user->data()->collection('Profile')->orderBy('age', 'DESC')->get()-
 ```php
 $user = User::where(['id', '=', '123456789'])->firstOrFail();
 
-$profiles = $user->data()->collection('Profile')->limit(10)->data();
+$profiles = $user->collection('Profile')->limit(10);
 
 ```
 
@@ -233,7 +233,7 @@ $profiles = $user->data()->collection('Profile')->limit(10)->data();
 ```php
 $user = User::where(['id', '=', '123456789'])->firstOrFail();
 
-$profiles = $user->data()->collection('Profile')->paginate(10, 'page')->data();
+$profiles = $user->collection('Profile')->paginate(10, 'page');
 
 ```
 

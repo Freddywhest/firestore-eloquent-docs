@@ -1,0 +1,59 @@
+---
+sidebar_position: 1
+---
+
+# Artisan Command
+
+## Artisan Command List
+
+Laravel Firestore Eloquent provides a convenient Artisan command to generate new model quickly. Run the following command to make a new User Model. 
+
+```bash
+php artisan make:fmodel User
+```
+
+This command will generate a new file in your project: ``app/FModel/User.php``.
+
+:::info[IMPORTANT NOTES]
+Note that if you have modified the [class_namespace](/docs/get-started/configuration/#class-namespace) value in the configuration file located at **``config/firestore.php``**, you can locate the new file generated using the namespace as the path. [See here](/docs/get-started/configuration/#class-namespace) for more details.
+:::
+
+## Artisan Command Options
+
+The ``make:fmodel`` command has the following options:
+
+| Option | Description |
+| --- | --- |
+| ``--collection=`` | The collection name to be used for the model. |
+| ``--primaryKey`` | The primary key to be used for the model. |
+
+## Artisan Command Examples
+
+### Generate a new model
+
+```bash
+php artisan make:fmodel User
+```
+
+### Generate a new model with a custom collection name
+
+```bash
+php artisan make:fmodel User --collection=users
+```
+
+### Generate a new model with a custom primary key
+
+```bash
+php artisan make:fmodel User --primaryKey=uid
+```
+
+### Generate a new model with a custom collection name and primary key
+
+```bash
+php artisan make:fmodel User --collection=users --primaryKey=uid
+```
+
+:::info[RESULT]
+The above command will generate a new file in your project: ``app/FModel/User.php`` with primaryKey ``uid`` and collection name ``users``.
+:::
+

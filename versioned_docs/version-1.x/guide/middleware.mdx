@@ -1,0 +1,31 @@
+---
+sidebar_position: 4
+---
+
+# Middlewares
+
+## Authentication Middleware
+
+The **``f.auth``** can be used to only allow authenticated users to access a given route. It ensures that the user session is authenticated, redirecting to the login page if necessary. Additionally, it sets cache control headers to prevent caching of sensitive data. Since this middleware is already registered in your application, all you need to do is attach the middleware to a route definition:
+
+```php
+Route::get('/profile', function () {
+    // Only authenticated users may access this route...
+})->middleware('f.auth');
+```
+
+:::info
+To change the route which a user is redirected to when already authenticated, [See here](/docs/get-started/configuration#auth-url).
+:::
+
+## Unauthentication Middleware
+The **``f.guest``** can be used to only allow unauthenticated users to access a given route.
+
+```php
+Route::get('/login', function () {
+    // Only unauthenticated users may access this route...
+})->middleware('f.guest');
+```
+:::info
+To change the route which a user is redirected to when not authenticated, [See here](/docs/get-started/configuration#guest-url).
+:::

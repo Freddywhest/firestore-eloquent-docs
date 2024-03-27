@@ -1,0 +1,55 @@
+---
+sidebar_position: 5
+---
+
+# Deleting Documents
+
+## Deleting Documents in Firestore Eloquent Library
+
+Deleting documents in Firestore is an essential operation, and the Firestore Eloquent Library in Laravel offers convenient methods to remove documents from a collection. Let's explore how to delete documents using the library's features.
+
+### Delete Many Documents with ``deleteMany()``
+
+:::warning
+Deleting many documents in a collection can take a long time if there are a lot of documents in the sub collection.
+:::
+
+The **``deleteMany()``** method allows you to delete multiple documents in a Firestore collection based on a specified query. You can use this method to delete documents that match certain conditions.
+
+#### Basic Deletion
+
+Let's say we want to delete all documents in the **``users``** collection that have the **``age``** field set to **``18``**. We can use the **``deleteMany()``** method to delete all documents that match this condition.
+
+```php
+// Delete all users with age 20
+User::where(['age', '=',  20])->deleteMany();
+```
+
+#### Deletion with Multiple Conditions
+
+You can also delete documents that match multiple conditions. Let's say we want to delete all users with the **``age``** field set to **``20``** and the **``name``** field set to **``John``**. We can use the **``deleteMany()``** method to delete all documents that match this condition.
+
+```php
+// Delete all users with age 20 and name John
+User::andWhere(['age', '=',  20], ['name', '=', 'John'])->deleteMany();
+```
+
+### Delete Single Document with ``delete()``
+
+The **``delete()``** method allows you to delete a single document in a Firestore collection. You can use this method to delete a document that matches a certain condition.
+
+#### Examples
+
+Let's say we want to delete a user with the **``age``** field set to **``20``**. We can use the **``delete()``** method to delete the document that matches this condition.
+
+```php
+// Delete a user with the specified ID
+$user = User::where(['user_id', '=', $userId])->first();
+$user->delete();
+```
+
+```php
+// Delete a user with the specified ID
+$user = User::where(['user_id', '=', $userId])->firstOrFail();
+$user->delete();
+```

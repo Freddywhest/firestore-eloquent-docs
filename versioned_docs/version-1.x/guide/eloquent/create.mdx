@@ -24,7 +24,7 @@ $newUser = User::create(['name' => 'John', 'age' => 20]);
 
 ```php
 $newUser = User::create(['name' => 'John', 'age' => 20]);
-echo $newUser->data()->name; //Result: John
+echo $newUser->name; //Result: John
 
 //Delete the newly created user
 $newUser->delete();
