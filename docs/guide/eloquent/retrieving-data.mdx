@@ -4,12 +4,12 @@ sidebar_position: 2
 
 # Retrieving data
 
-:::note[Note]
-With version >= 2.x of this library, to get the data of a document, you should use the `data()` method.<br />
-**See below for more details and examples.**
-:::
-
 The library provides flexible and convenient methods for retrieving documents from Firestore. Whether you want to retrieve all documents, filter based on specific criteria, or find a document by its ID.
+
+:::info[Note]
+With version >= 2.x of the library, to get the data of the document, you need to call the `data()` method on the retrieved document. This method returns the data of the document as an object.<br />
+**See below for more details and examples
+:::
 
 ## Retrieving first documents
 
@@ -291,3 +291,4 @@ $users = User::where(['age', '=', 25])->orderByDesc('age')->limit(10);
 // Retrieve the first 10 users with age 25, ordered by ID in descending order
 $users = User::where(['age', '=', 25])->orderByDesc('age')->limit(10);
 ```
+import { version } from "react"
