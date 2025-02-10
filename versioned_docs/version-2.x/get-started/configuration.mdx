@@ -10,10 +10,9 @@ All configuration settings can be found in the **firebase.php** file, which is l
 If the file does not exists, you need to run the following artisan command:
 
 ```bash
-php artisan vendor:publish --provider="Roddy\FirestoreEloquent\Providers\FModelProvider" --force
+php artisan vendor:publish --provider="Kreait\Laravel\Firebase\ServiceProvider" --tag=config
   ```
 :::
-
 
 ## Guest Url
 
@@ -46,7 +45,25 @@ Note that models are generated in the location based on the specified namespace 
 The default setting is **``App\\FModels``**.
 :::
 
-## Firebase/Firestore Project Id
+## Firebase Credentials
+
+To obtain the firebase-credentials.json file for Cloud Firestore and set it up with you project, you need to follow these steps:
+
+1. Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
+2. Click on the **Project Overview** button.
+3. Click on the **Settings** button and select **Project Settings**.
+4. Click on the **Service Accounts** tab.
+5. Click on the **Generate New Private Key** button to download the firebase-credentials.json file.
+6. Copy firebase-credentials.json to Your Project.
+7. Update .env File with the following
+- Open your .env file and add the following line, replacing ``path/to/firebase-credentials.json`` with the correct path:
+```dotenv
+FIREBASE_CREDENTIALS=/path/to/firebase-credentials.json
+```
+
+Now your Laravel project is configured to use the Firebase credentials for Cloud Firestore. Make sure to keep the firebase-credentials.json file secure and not expose it publicly.
+
+## Firebase Project Id
 
 To obtain the Firebase Project Id, you need to follow these steps:
 
@@ -61,3 +78,20 @@ FIREBASE_PROJECT_ID=your-project-id
 ```
 
 The Project ID is a unique identifier for your Firebase project. You can use this Project ID when configuring Firebase services or integrating Firebase with other platforms.
+
+## Firebase Database Url
+
+To obtain the Firebase Database Url, you need to follow these steps:
+
+1. Go to the [Firebase Console](https://console.firebase.google.com/) and select your project. 
+2. Click on the **Project Overview** button. 
+3. Click on the **Settings** button and select **Project Settings**. 
+4. Click on the **Service Accounts** tab. 
+5. Copy the **Database URL**. It should look something like this: ``https://<your-project>.firebaseio.com``.
+6. Update .env File with the following:
+- Open your .env file and add the following line, replacing **``https://<your-project>.firebaseio.com``** with the correct database url:
+```dotenv
+FIREBASE_DATABASE_URL=https://<your-project>.firebaseio.com
+```
+
+You can copy this URL and use it in your Laravel application's configuration, particularly if you are working with Firebase Realtime Database features.

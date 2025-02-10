@@ -1,0 +1,159 @@
+---
+sidebar_position: 2
+---
+
+# Authentication
+
+Web applications often require a robust authentication system for users to securely log in. Implementing such a feature can be complex and pose potential risks. Laravel Firestore Eloquent aims to simplify and expedite the process by providing tools that empower you to implement authentication swiftly, securely, and with ease.
+
+## Authenticating Users
+
+To utilize Laravel Firestore Eloquent authentication services, we'll access them through the ``FAuth`` class. Therefore, ensure to import the ``FAuth`` class at the top of your class. Now, let's delve into the attempt method.  Typically the attempt is employed to manage authentication attempts from your application's login form, the attempt method, if successful, should include session regeneration for the user to avert session fixation: 
+
+:::note[PROTECTING ROUTES]
+To add authentication middleware to your auth routes.[See here](/docs/guide/authentication).
+:::
+
+**Usage For Livewire**
+```php
+<?php
+//Livewire Example
+
+//namespace ...;
+
+use Livewire\Component;
+use Roddy\FirestoreEloquent\Auth\FAuth;
+
+class Login extends Component
+{
+    public $password, $email;
+
+    protected $rules = [
+        //validation rules...
+    ];
+
+    protected $messages = [
+        //validation messages...
+    ];
+
+    public function login()
+    {
+        /**
+         * Validates the user input data.
+         */
+        $this->validate();
+
+        /**
+         * Attempt to authenticate the user with the given email and password.
+         * If the authentication fails, flash an error message to the session.
+         *
+         * @return void
+         */
+        if(!FAuth::attempt(['email' => $this->email, 'password' => $this->password])){
+            return session()->flash('credentials', 'Incorrect credentials');
+        }
+
+        /**
+         * Check if the user's account status is active before allowing login.
+         * If the user's account status is not active, flash a message indicating the reason for login failure.
+         */
+        if(FAuth::user()->status !== 'active'){
+            return session()->flash('credentials', 'You cannot login because your account is '.FAuth::user()->status );
+        }
+        request()->session()->regenerate();
+        return redirect()->route('dashboard');
+    }
+}
+```
+---
+
+**Usage For Laravel**
+
+```php
+<?php
+//Laravel Example
+
+namespace App\Http\Controllers;
+ 
+use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Roddy\FirestoreEloquent\Auth\FAuth;
+ 
+class LoginController extends Controller
+{
+    /**
+     * Handle an authentication attempt.
+     */
+    public function authenticate(Request $request): RedirectResponse
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+ 
+        if (FAuth::attempt($credentials)) {
+            $request->session()->regenerate();
+ 
+            return redirect()->route('dashboard');
+        }
+ 
+        return back()->withErrors([
+            'email' => 'The provided credentials do not match our records.',
+        ])->onlyInput('email');
+    }
+}
+```
+
+## Retrieving The Authenticated User
+
+To retrieve the authenticated user, we'll use the ``user`` method on the ``FAuth`` class. This method will return an instance of the authenticated user:
+
+```php
+<?php
+
+use Roddy\FirestoreEloquent\Auth\FAuth;
+
+// Retrieve the currently authenticated user...
+$user = FAuth::user();
+
+// Retrieve the currently authenticated user's ID...
+$id = FAuth::id();
+```
+
+## Logging Out
+
+To log users out of your application, you may use the ``logout`` method on the ``FAuth`` class. This will clear the authentication information in the user's session:
+
+```php
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Roddy\FirestoreEloquent\Auth\FAuth;
+ 
+/**
+ * Log the user out of the application.
+ */
+public function logout(Request $request): RedirectResponse
+{
+    FAuth::logout();
+ 
+    $request->session()->invalidate();
+ 
+    $request->session()->regenerateToken();
+ 
+    return redirect('/');
+}
+```
+
+## Authentication helper
+
+The ``fauth`` function returns an authenticator instance. You may use it as an alternative to the ``FAuth`` class:
+
+```php
+// Retrieve the currently authenticated user...
+$user = fauth()->user();
+
+// Retrieve the currently authenticated user's ID...
+$id = fauth()->id();
+```

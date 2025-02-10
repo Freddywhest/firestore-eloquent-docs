@@ -1,0 +1,39 @@
+---
+sidebar_position: 8
+---
+
+# Aggregations
+
+## Aggregations in Firestore Eloquent Library
+
+Aggregations are a common operation to retrieve the number of records that match certain conditions. The Firestore Eloquent Library in Laravel provides a straightforward way to count documents based on specified criteria. Let's explore how to count documents using the library's features.
+
+### Counting All Documents
+
+
+To count all documents in a Firestore collection, you can use the **``count()``** method:
+
+```php
+// Count all users
+$totalUsers = User::count();
+```
+
+### Summing a Field
+
+To sum a field, you can use the **``sum()``** method:
+
+```php
+// Sum all users' ages
+$totalAges = User::sum('age');
+```
+
+### Average of a Field
+
+To get the average of a field, you can use the **``avg()``** method:
+
+```php
+// Get the average of all users' ages
+$averageAge = User::avg('age');
+```
+
+

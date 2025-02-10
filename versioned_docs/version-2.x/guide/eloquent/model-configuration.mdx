@@ -132,26 +132,3 @@ class User extends FModel
     ];
 }
 ```
-
-## Hidden Property
-
-The **``$hidden``** property defines the fields that should not be visible when retrieving a document. 
-
-
-
-```php
-
-class User extends FModel
-{
-    /**
-     * The hidden fields.
-
-     *
-     * @var array
-     */
-    protected $hidden = [
-        'password',
-    ];
-
-}
-```

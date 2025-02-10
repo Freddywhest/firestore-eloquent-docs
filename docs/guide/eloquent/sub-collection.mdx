@@ -3,240 +3,95 @@ sidebar_position: 9
 ---
 
 # Sub collection
+A sub-collection is a nested collection within a Firestore document. This allows for better data organization and structuring.
 
-## Retrieve documents from a sub collection
-
-### ``all()``
-
-```php
-$user = User::where(['id', '=', '123456789'])->firstOrFail();
-$profiles = $user->data()->collection('Profile')->all();
-```
-
-### ``first()``
+## Defining a sub collection
+In your model the model class, define a method that starts with sub, followed by the sub-collection name.
 
 ```php
-$user = User::where(['id', '=', '123456789'])->firstOrFail();
-$profile = $user->data()->collection('Profile')->first();
+class User extends FModel
+{
+    public function subProfile()
+    {
+        return SubCollection::primaryKey("id")->subCollection('profiles')->load();
+    }
+}
 ```
 
-It accepts all Methods from [Retrieve documents](/docs/guide/eloquent/retrieving-data).
+In this example:  
+- `subProfile()` defines a sub-collection called `profiles`.  
+- `primaryKey("id")` specifies that the primary key for this sub-collection is `id`.  
+- `load()` fetches the sub-collection data.  
 
-### ``firstOrFail()``
-
-```php
-$user = User::where(['id', '=', '123456789'])->firstOrFail();
-$profile = $user->data()->collection('Profile')->firstOrFail();
-```
-
-It accepts all Methods from [Retrieve documents](/docs/guide/eloquent/retrieving-data).
-
-### ``get()``
-
-```php
-$user = User::where(['id', '=', '123456789'])->firstOrFail();
-$profiles = $user->data()->collection('Profile')->get();
-```
-
-It accepts all Methods from [Retrieve documents](/docs/guide/eloquent/retrieving-data).
-
-### ``paginate()``
-
-```php
-$user = User::where(['id', '=', '123456789'])->firstOrFail();
-$profiles = $user->data()->collection('Profile')->paginate();
-```
-
-:::warning
-Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
-:::
-
-### ``where()``
-
-```php
-$user = User::where(['id', '=', '123456789'])->firstOrFail();
-$profiles = $user->data()->collection('Profile')->where(['id', '=', '123456789'])->get();
-```
-:::warning
-Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
-:::
-
-### ``orWhere()``
-
-```php
-$user = User::where(['id', '=', '123456789'])->firstOrFail();
-$profiles = $user->data()->collection('Profile')->andWhere([['name', '=', 'John'], ['age' => 25]])->get();
-```
-:::warning
-Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
-:::
-
-### ``andWhere()``
-
-```php  
-$user = User::where(['id', '=', '123456789'])->firstOrFail();
-$profiles = $user->data()->collection('Profile')->andWhere([['name', '=', 'John'], ['age' => 25]])->get();
-```
-
-## Create a document in a sub collection
-
-``create($data, $fillable, $required, $default, $fieldTypes, $id)``
-
-### Parameters
-
-- ``$data`` (array) **(required)** - The data to create the document with
-- ``$fillable`` (array) **(required)** - The fillable fields of the document. See [Fillable](/docs/guide/eloquent/model-configuration#fillable-property)
-- ``$required`` (array) **(optional)** - The required fields of the document. See [Required](/docs/guide/eloquent/model-configuration#required-property)
-- ``$default`` (array) **(optional)** - The default fields of the document. See [Default](/docs/guide/eloquent/model-configuration#default-property)
-- ``$fieldTypes`` (array) **(optional)** - The field types of the document. See [Field Types](/docs/guide/eloquent/model-configuration#field-types-property)
-- ``$primaryKey`` (string) **(optional)** - The primaryKey of the document. If not provided, the primary key will be ``'id'``.
-
-#### Example
-
-```php
-$user = User::where(['id', '=', '123456789'])->firstOrFail();
-
-$fillable = ['name', 'age'];
-$required = ['name'];
-$default = [];
-$fieldTypes = ['name' => 'string', 'age' => 'integer'];
-$primaryKey = 'id';
-
-$newProfile = $user->data()->collection('Profile')->create([
-    'name' => 'John',
-    'age' => 25
-], $fillable, $required, $default, $fieldTypes, $primaryKey);
-
-echo $newProfile->data()->name; // John
-echo $newProfile->data()->age; // 25
-
-```
-
-## Update a document in a sub collection
-
-``updateSubDocument($data, $fillable, $required, $default, $fieldTypes, $primaryKey)``
-
-### Parameters
-
-- ``$data`` (array) **(required)** - The data to update the document with
-- ``$fillable`` (array) **(required)** - The fillable fields of the document. See [Fillable](/docs/guide/eloquent/model-configuration#fillable-property)
-- ``$required`` (array) **(optional)** - The required fields of the document. See [Required](/docs/guide/eloquent/model-configuration#required-property)
-- ``$fieldTypes`` (array) **(optional)** - The field types of the document. See [Field Types](/docs/guide/eloquent/model-configuration#field-types-property)
-- ``$primaryKey`` (string) (default = ``'id'``) **(required if primaryKey is not ``'id'``)** - The primary key of the document. If not provided, the primary key of the model will be used.
-
-#### Example
-
-```php
-$user = User::where(['id', '=', '123456789'])->firstOrFail();
-
-$fillable = ['name', 'age'];
-$required = ['name'];
-$default = [];
-$fieldTypes = ['name' => 'string', 'age' => 'integer'];
-$primaryKey = 'id';
-
-$profile = $user->data()->collection('Profile')->where(['id', '=', '123456789'])->firstOrFail();
-
-$updatedProfile = $profile->data()->updateSubDocument([
-    'name' => 'John',
-    'age' => 25
-], $fillable, $required, $fieldTypes, $primaryKey);
-
-echo $updatedProfile->name; // John
-echo $updatedProfile->age; // 25
-
-```
-
-## Delete a document in a sub collection
-
-``delete()``
-
-#### Example
-
-```php
-$user = User::where(['id', '=', '123456789'])->firstOrFail();
-
-$profile = $user->data()->collection('Profile')->where(['id', '=', '123456789'])->firstOrFail();
-
-$profile->data()->delete();
-
-```
-
-## Delete many documents in a sub collection
-
-:::warning
-Deleting many documents in a sub collection can take a long time if there are a lot of documents in the sub collection.
+:::info
+Note: Make sure you start the method name with `sub` followed by the name of the sub collection.
 :::
 
 
-``deleteMany()``
+## Understanding the `SubCollection` Class Explained
+The `SubCollection` class provides methods to configure and retrieve sub-collections.
 
-#### Example
+### Main Methods:  
+- **`subCollection($name)`** → Sets the sub-collection name. **[required]**  
+- **`primaryKey($key)`** → Defines the primary key of the sub-collection. **[required]**
+- **`fillableFields($fields)`** → Specifies which fields can be inserted or updated.  
+- **`requiredFields($fields)`** → Lists fields that must be provided when inserting data.  
+- **`defaultFields($fields)`** → Assigns default values to fields if they are not provided.  
+- **`fieldTypes($fields)`** → Defines data types (`integer, string, array, object`).  
+- **`hiddenFields($fields)`** → Specifies fields to exclude from responses.  
+- **`keyToUse($key)`** → By default, the primary key of the parent model (`User`) is used to access sub-collections. If you want to use a different field, you can set it using this method.  
+- **`load()`** → Fetches the sub-collection data. 
+
+### Example Usage of `SubCollection`:  
+```php
+SubCollection::primaryKey("id")
+    ->subCollection('user_logs')
+    ->keyToUse("user_ID")
+    ->fillableFields(['log_id', 'action', 'timestamp'])
+    ->load();
+```
+
+This means:  
+- A sub-collection named `user_logs` is being defined.  
+- The primary key is `id`.  
+- Instead of using the default primary key from `ZoneData`, it will use `user_ID` to access sub-collections.  
+- Only `log_id`, `action`, and `timestamp` can be inserted or updated.  
+
+### Usage of the sub collection
 
 ```php
-$user = User::where(['id', '=', '123456789'])->firstOrFail();
+class User extends FModel
+{
+    public function subProfile()
+    {
+        return SubCollection::primaryKey("id")->subCollection('profiles')->load();
+    }
+}
 
-$user->data()->collection('Profile')->where(['age', '>', 20])->deleteMany();
+
+$user = User::find($userId); 
+//Or 
+$user = User::where(['id', $userId])->first();
+
+//Getting the first item
+$profile = $user->subProfile()->first();
+
+//Filtering the data
+$profile = $user->subProfile()->where(['id', '123'])->first();
+
+//Getting all items
+$profiles = $user->subProfile()->all();
+
+//Getting the count of items
+$count = $user->subProfile()->count();
 
 ```
 
-## Ordering documents in a sub collection
+## Summary  
+- A sub-collection is a collection inside a document.  
+- To define one, create a method in your model starting with `sub`.  
+- Use the `SubCollection` class to configure and retrieve sub-collections.  
+- Define fields, primary keys, required values, and more using provided methods.  
+- Use `keyToUse($key)` if you want to reference sub-collections using a different field instead of the default primary key.  
 
-:::warning
-Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
-:::
-
-``orderBy($field, $direction)``
-
-### Parameters
-
-- ``$field`` (string) - The field to order by
-- ``$direction`` (string) - The direction to order by. Can be ``ASC`` or ``DESC``
-
-#### Example
-
-```php
-$user = User::where(['id', '=', '123456789'])->firstOrFail();
-
-$profiles = $user->data()->collection('Profile')->orderBy('age', 'DESC')->get()->data();
-
-```
-
-## Limiting documents in a sub collection
-
-``limit($limit)``
-
-### Parameters
-
-- ``$limit`` (int) - The limit of documents to retrieve
-
-#### Example
-
-```php
-$user = User::where(['id', '=', '123456789'])->firstOrFail();
-
-$profiles = $user->data()->collection('Profile')->limit(10)->data();
-
-```
-
-## Paginating documents in a sub collection
-
-``paginate($limit, $pageName)``
-
-### Parameters
-
-- ``$limit`` (int) - The limit of documents to retrieve
-- ``$pageName`` (string) - The name of the page query string parameter
-
-#### Example
-
-```php
-$user = User::where(['id', '=', '123456789'])->firstOrFail();
-
-$profiles = $user->data()->collection('Profile')->paginate(10, 'page')->data();
-
-```
-
-## Conclusion
-
-That's it! You now know how to use sub collections in your Laravel application. If you have any issues or questions, please [open an issue on GitHub](https://github.com/FreddyWhest/firestore-eloquent/issues/new). 
+This approach ensures better Firestore organization and easy data retrieval. 🚀

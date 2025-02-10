@@ -22,95 +22,84 @@ Defining a **``hasOne``** Relationship Let's explore the components of defining 
 
 Once the relationship is defined, you can access the related model using the hasOne relationship.
 
-### Example 1: Finding a User and their Profile
-
-#### Using ``find()`` method:
+### Example 1: Finding a User and their Profile of a User
 
 ```php
-// Find a user by ID
-$user = User::find('user1');
+// User Model
+use Roddy\FirestoreEloquent\Facade\FModel;
+use Roddy\FirestoreEloquent\Firestore\Eloquent\Traits\FRelations;
 
-// Access the user's profile
-$profile = $user->data()->hasOne('Profile', 'user_id', 'id');
+class User extends FModel
+{
+    //Import this class
+    use FRelations;
+
+    protected $collection = 'users';
+    protected $primaryKey = 'user_id';
+    protected $fillable = ['name', 'email', 'password'];
+    protected $hidden = ['password'];
+
+
+    //HasOne Relationship
+    public function profile()
+    {
+        return $this->fHasOne(Profile::class, 'user_id', 'id');
+    }
+}
+
+
+//Find users by a specific condition and get a collection
+$user = User::where(['user_id', 'user1'])->first();
+
+//Access the user's profile
+$profile = $user->profile();
+
+//OR
+
+$profile = $user->profile;
 
 ```
 
-#### Alternative Using Model Class:
-    
-```php
-use App\FModel\Profile;
-
-// Find a user by ID
-$user = User::find('user1');
-
-// Access the user's profile using the Profile model class
-$profile = $user->data()->hasOne(Profile::class, 'user_id', 'id');
-```
-
-### Example 2: Retrieving User and Profile with ``first()`` and ``firstOrFail()``
-
-#### Using ``first()`` method:
+### Example 2: Finding a User and their Profile of Users
 
 ```php
-// Find a user by a specific condition
-$user = User::where(['user_id', '=', 'user1'])->first();
+//User Model
+use Roddy\FirestoreEloquent\Facade\FModel;
+use Roddy\FirestoreEloquent\Firestore\Eloquent\Traits\FRelations;
 
-// Access the user's profile
-$profile = $user->data()->hasOne('Profile', 'user_id', 'id');
-```
+class User extends FModel
+{
+    //Import this class
+    use FRelations;
 
-#### Using ``firstOrFail()`` method:
+    protected $collection = 'users';
+    protected $primaryKey = 'user_id';
+    protected $fillable = ['name', 'email', 'password'];
+    protected $hidden = ['password'];
 
-```php
-// Find a user by a specific condition
-$user = User::where(['user_id', '=', 'user1'])->firstOrFail();
 
-// Access the user's profile
-$profile = $user->hasOne('Profile', 'user_id', 'id');
-```
+    //HasOne Relationship
+    public function profile()
+    {
+        return $this->fHasOne(Profile::class, 'user_id', 'id');
+    }
+}
 
-### Example 3: Retrieving Users and Their Profiles with get(), all(), and paginate()
 
-#### Using ``get()`` method:
-
-```php
-// Find users by a specific condition and get a collection
+//Find users by a specific condition and get a collection
 $users = User::where(['user_id', '=', 'user1'])->get();
 
-// Display user information in Blade
-@foreach ($users as $user)
-    <h1>{{ $user->hasOne('Profile', 'user_id', 'id')->email }}</h1>
-@endforeach
+//Access the user's profile
+$users->each(function ($user) {
+    $profile = $user->profile();
+});
+
 ```
 
-#### Using ``all()`` method:
 
-```php
-// Get all users
-$users = User::all();
-
-// Display user information in Blade
-@foreach ($users as $user)
-    <h1>{{ $user->hasOne('Profile', 'user_id', 'id')->email }}</h1>
-@endforeach
-```
-
-#### Using ``paginate()`` method:
-
-```php
-// Get all users
-use App\FModel\Profile;
-
-// Find users by a specific condition and paginate the results
-$users = User::where(['user_id', '=', 'user1'])->paginate(10);
-
-// Display user information in Blade
-@foreach ($users->data() as $user)
-    <h1>{{ $user->hasOne(Profile::class, 'user_id', 'id')->email }}</h1>
-@endforeach
-```
 
 ## ``hasMany`` Relationship
+
 
 In Eloquent, the **``hasMany``** relationship is used to define a one-to-many relationship between two models. This means that each instance of the current model (e.g., **User**) can have multiple related records in another model (e.g., **Post**). The relationship is typically established through a foreign key in the related model that references the primary key of the current model.
 
@@ -132,79 +121,132 @@ Once the relationship is defined, you can access the related model using the has
 
 ### Example 1: Finding a User and their Posts
 
-#### Using ``find()`` method:
-
 ```php
-// Find a user by ID
-$user = User::find('user1');
+//User Model
+use Roddy\FirestoreEloquent\Facade\FModel;
+use Roddy\FirestoreEloquent\Firestore\Eloquent\Traits\FRelations;
 
-// Access the user's profile
-$posts = $user->hasMany('Post', 'user_id', 'id');
+class User extends FModel
+{
+    //Import this class
+    use FRelations;
+    
+    protected $collection = 'users';
+    protected $primaryKey = 'user_id';
+    protected $fillable = ['name', 'email', 'password'];
+    protected $hidden = ['password'];
 
-//Blade rendering
-@foreach ($posts as $post)
-    <h1>{{ $post->title }}</h1>
-@endforeach
-```
+    //HasMany Relationship
+    public function posts()
+    {
+        return $this->fHasMany(Post::class, 'user_id', 'id');
+    }
+}
 
-#### Example 3: Retrieving Users and Their Posts with ``get()``, ``all()``, and ``paginate()``
 
-#### Using ``get()`` method:
-
-```php
-// Find users by a specific condition and get a collection
+//Find users by a specific condition and get a collection
 $users = User::where(['user_id', '=', 'user1'])->get();
 
-// Display user information in Blade
-@foreach ($users as $user)
-    @php
-        $posts = $user->hasMany('Profile', 'user_id', 'id') 
-    @endphp
+//Access the user's posts
+$users->each(function ($user) {
+    $posts = $user->posts();
+});
 
-    @foreach ($posts as $post)
-        <h1>{{ $post->title }}</h1>
-    @endforeach
-
-@endforeach
 ```
 
-#### Using ``all()`` method:
+### Example 2: Finding a User and their Posts of a User
 
 ```php
-// Get all users
-$users = User::all();
+//User Model
+use Roddy\FirestoreEloquent\Facade\FModel;
+use Roddy\FirestoreEloquent\Firestore\Eloquent\Traits\FRelations;
 
-// Display user information in Blade
-@foreach ($users as $user)
-    @php
-        $posts = $user->hasMany('Profile', 'user_id', 'id') 
-    @endphp
+class User extends FModel
+{
+    //Import this class
+    use FRelations;
 
-    @foreach ($posts as $post)
-        <h1>{{ $post->title }}</h1>
-    @endforeach
+    protected $collection = 'users';
+    protected $primaryKey = 'user_id';
+    protected $fillable = ['name', 'email', 'password'];
+    protected $hidden = ['password'];
 
-@endforeach
+    //HasMany Relationship
+    public function posts()
+    {
+        return $this->fHasMany(Post::class, 'user_id', 'id');
+    }
+}
+
+
+//Find users by a specific condition and get a collection
+$user = User::where(['user_id', '=', 'user1'])->first();
+
+
+//Access the user's posts
+$posts = $user->posts();
+});
 ```
 
-#### Using ``paginate()`` method:
+## ``belongsTo`` Relationship
+
+The ``belongsTo`` relationship is used to define a one-to-one or one-to-many relationship between two models. This means that each instance of the related model (e.g., **Post**) can have one or more related records in the current model (e.g., **User**). The relationship is typically established through a foreign key in the current model that references the primary key of the related model.
+
+### Defining a ``belongsTo`` Relationship
+
+Let's explore the components of defining a belongsTo relationship:
+
+``belongsTo($model, $foreignKey, $localKey)``
+
+- **``$model``:** The related model class name (e.g., **'Post'**). This is the class of the model that the current model (User) is related to.
+
+- **``$foreignKey``:** The foreign key in the current model's table that references the primary key of the related model (User). For example, if the Post model has a column named ``user_id`` that references the id column in the User model, you would specify ``'user_id'`` as the ``$foreignKey``.
+
+- **``$localKey``:** The local key of the current model (User). This is the primary key by default. If the primary key is named something other than id, you can specify it here. In the example, 'id' is used as the default.
+
+### Accessing the Related Model
+
+Once the relationship is defined, you can access the related model using the belongsTo relationship.
+
+### Example 1: Finding a Post and its Author
 
 ```php
-// Get all users
-use App\FModel\Profile;
+//Post Model
+use Roddy\FirestoreEloquent\Facade\FModel;
+use Roddy\FirestoreEloquent\Firestore\Eloquent\Traits\FRelations;
 
-// Find users by a specific condition and paginate the results
-$users = User::where(['user_id', '=', 'user1'])->paginate(10);
+class Post extends FModel
+{
+    //Import this class
+    use FRelations;
 
-// Display user information in Blade
-@foreach ($users->data() as $user)
-    @php
-        $posts = $user->hasMany(Profile::class, 'user_id', 'id') 
-    @endphp
+    protected $collection = 'posts';
+    protected $primaryKey = 'post_id';
+    protected $fillable = ['title', 'content', 'user_id'];
 
-    @foreach ($posts as $post)
-        <h1>{{ $post->title }}</h1>
-    @endforeach
+    //BelongsTo Relationship
+    public function user()
+    {
+        return $this->fBelongsTo(User::class, 'user_id', 'id');
+    }
+}
 
-@endforeach
+
+//Find posts by a specific condition and get a collection
+$posts = Post::where(['post_id', '=', 'post1'])->get();
+
+//Access the post's author
+$posts->each(function ($post) {
+    $author = $post->user();
+});
+
 ```
+
+
+
+
+
+
+
+
+

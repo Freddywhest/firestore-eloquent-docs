@@ -1,0 +1,54 @@
+---
+sidebar_position: 1
+---
+
+# Installation
+
+### Requirements
+Before we start, make sure you have the following installed:
+
+- PHP 8.1 or later
+- gRPC extension
+- Any requirements found on [Cloud Firestore for PHP website](https://cloud.google.com/php/docs/firestore)
+- Laravel 9 or later (Recommended Latest Laravel version)
+- Composer
+
+### Installation
+
+1. Install this package using composer:
+
+    ```bash
+    composer require roddy/firestore-eloquent
+    ```
+
+2. Add the following line to the `service providers` array within your `config/app.php` file:
+
+    ```php
+    Roddy\FirestoreEloquent\Providers\FModelProvider::class,
+    ```
+
+3. Copy and paste this to your `.env` file and replace `path/to/firebase-credentials.json` with the path to your credentials JSON file:
+
+    ```dotenv
+    GOOGLE_APPLICATION_CREDENTIALS=path/to/firebase-credentials.json
+    ```
+
+4. Copy and paste this to your `.env` file and replace `https://<your-project>.firebaseio.com` with the database URL for your project. You can find the database URL for your project at [Firebase Console](https://console.firebase.google.com/u/project/_/settings/general):
+
+    ```dotenv
+    FIREBASE_DATABASE_URL=https://<your-project>.firebaseio.com
+    ```
+
+5. Copy and paste this to your `.env` file and replace `your-project-id` with your project ID:
+
+    ```dotenv
+    FIREBASE_PROJECT_ID=your-project-id
+    ```
+
+6. Publish the package configuration using Artisan:
+
+    ```bash
+    php artisan vendor:publish --provider="Roddy\FirestoreEloquent\Providers\FModelProvider" --force
+    ```
+
+You can locate the configuration file in `config/firebase.php`.

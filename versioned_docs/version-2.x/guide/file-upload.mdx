@@ -1,0 +1,212 @@
+---
+sidebar_position: 5
+---
+
+# File Uploads
+
+## Overview
+
+The File Upload provides methods to facilitate the uploading of files to Google Cloud Storage and retrieving their associated URLs and metadata.
+
+:::info[IMPORTANT NOTES]
+Ensure that the necessary environment variables **``(GOOGLE_CLOUD_STORAGE_BUCKET and GOOGLE_APPLICATION_CREDENTIALS)``** are set before using these methods.
+:::
+
+## Methods
+
+### ``upload``
+
+Uploads a file to Google Cloud Storage.
+
+```php
+upload(string $name, $path = 'images')
+```
+
+
+#### Parameters
+
+| Name | Type | Description |
+| **``$name``** | string |  The name of the file input field in the HTTP request. |
+| **``$path``** (optional) | string | The path where the file should be stored in Google Cloud Storage. The default path is set to 'images'. |
+
+This method handles the file upload process for Laravel.
+
+#### Returns
+
+- An object containing the following information:
+    - **``url``**: The URL of the uploaded file.
+    - **``downloadUrl``**: The URL used for downloading the file.
+    - **``contentType``**: The content type of the file.
+    - **``downloadTokens``**: Download tokens for secure file access.
+    - **``size``**: The size of the file.
+    - **``updated``**: The timestamp when the file was last updated.
+    - **``timeCreated``**: The timestamp when the file was created.
+    - **``bucket``**: The name of the Google Cloud Storage bucket.
+    - **``etag``**: The entity tag (ETag) of the file.
+    - **``generation``**: The generation of the file.
+    - **``nameAndPath``**: The name and path of the file.
+
+#### Example
+
+```php
+
+//Controller (FileUploadController.php)
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Roddy\FirestoreEloquent\FileUpload\FirestoreFileUpload;
+
+class FileUploadController extends Controller
+{
+    public function showForm()
+    {
+        return view('file-upload-form');
+    }
+
+    public function uploadFile(Request $request)
+    {
+        // Handle file upload using FirestoreFileUpload::upload method
+        try {
+        // Attempt to upload the file from input field named 'fileInputName' to the 'custom/path' in Google Cloud Storage
+            $uploadResult = FirestoreFileUpload::upload('fileInput', 'custom/path');
+            // ... (other properties)
+
+            // Redirect back to the form with the upload result
+            return redirect()->route('upload.form')->with(['uploadResult' => $uploadResult]);
+
+        } catch (\Exception $e) {
+            // Handle exceptions, e.g., missing environment variables or invalid file name
+            return $e->getMessage();
+        }
+
+    }
+}
+
+// upload.blade.php
+// File Upload Form
+<form action="{{ route('upload.file') }}" method="post" enctype="multipart/form-data">
+    @csrf
+    <label for="fileInput">Choose a file:</label>
+    <input type="file" name="fileInput" id="fileInput" accept="image/*">
+    <button type="submit">Upload File</button>
+</form>
+
+
+// preview.blade.php
+//Display the uploaded file (if any)
+@if(isset($uploadResult))
+    <hr>
+    <h2>Uploaded File:</h2>
+    <img src="{{ $uploadResult->url }}" alt="Uploaded File">
+    <p>File Size: {{ $uploadResult->size }} bytes</p>
+    <p>File Type: {{ $uploadResult->contentType }}</p>
+    //Add more details as needed
+@endif
+
+
+//Routes (web.php)
+use App\Http\Controllers\FileUploadController;
+
+Route::get('/upload-form', [FileUploadController::class, 'showForm'])->name('upload.form');
+Route::post('/upload-file', [FileUploadController::class, 'uploadFile'])->name('upload.file');
+
+```
+
+:::info
+Exception handling is implemented to provide meaningful error messages in case of issues during the file upload process.
+:::
+
+This example assumes you have a controller method **(uploadFile)** to handle the file upload logic using the **FirestoreFileUpload** class. Adjust the routes and controller methods based on your application structure.
+
+### ``uploadLivewire``
+
+This method handles the file upload process for **Livewire**.
+
+
+```php
+uploadLivewire(object $file, $path = 'images')
+```
+
+
+#### Parameters
+
+| Name | Type | Description |
+| **``$file``** | object |  The object containing the file input field in the HTTP request. |
+| **``$path``** (optional) | string | The path where the file should be stored in Google Cloud Storage. The default path is set to 'images'. |
+
+This method handles the file upload process for Laravel.
+
+#### Returns
+
+- An object containing the following information:
+    - **``url``**: The URL of the uploaded file.
+    - **``downloadUrl``**: The URL used for downloading the file.
+    - **``contentType``**: The content type of the file.
+    - **``downloadTokens``**: Download tokens for secure file access.
+    - **``size``**: The size of the file.
+    - **``updated``**: The timestamp when the file was last updated.
+    - **``timeCreated``**: The timestamp when the file was created.
+    - **``bucket``**: The name of the Google Cloud Storage bucket.
+    - **``etag``**: The entity tag (ETag) of the file.
+    - **``generation``**: The generation of the file.
+    - **``nameAndPath``**: The name and path of the file.
+
+#### Example
+
+```php
+
+//Controller (FileUploadController.php)
+namespace App\Http\Controllers;
+
+use Livewire\Component;
+use Illuminate\Http\Request;
+use Roddy\FirestoreEloquent\FileUpload\FirestoreFileUpload;
+
+class FileUpload extends Component
+{
+    public $photo;
+
+    public function render()
+    {
+        return view('file-upload-form');
+    }
+
+    public function uploadFile(Request $request)
+    {
+        // Handle file upload using FirestoreFileUpload::upload method
+        try {
+        // Attempt to upload the file from input field named 'fileInputName' to the 'custom/path' in Google Cloud Storage
+            if($this->photo){
+                $uploadResult = FirestoreFileUpload::uploadLivewire($this->photo, 'custom/path');
+            }else{
+                $uploadResult = null;
+            }
+            // ... (other properties)
+
+            // Redirect back to the form with the upload result
+            return redirect()->route('upload.form');
+
+        } catch (\Exception $e) {
+            // Handle exceptions, e.g., missing environment variables or invalid file name
+            return $e->getMessage();
+        }
+
+    }
+}
+
+
+// upload.blade.php
+// File Upload Form
+<form wire:submit='uploadFile'>
+    <label for="fileInput">Choose a file:</label>
+    <input type="file" wire:model.blur='photo' accept="image/*">
+    <button type="submit">Upload File</button>
+</form>
+```
+
+This example assumes you have a controller method **(uploadFile)** to handle the file upload logic using the **FirestoreFileUpload** class. Adjust the routes and controller methods based on your application structure.
+
+:::info[IMPORTANT NOTES]
+Ensure that the necessary environment variables **``(GOOGLE_CLOUD_STORAGE_BUCKET and GOOGLE_APPLICATION_CREDENTIALS)``** are set before using these methods.
+:::
+

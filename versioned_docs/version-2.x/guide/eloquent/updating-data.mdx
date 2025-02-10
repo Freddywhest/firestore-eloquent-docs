@@ -8,6 +8,30 @@ sidebar_position: 3
 
 Updating documents in Firestore is a common operation, and the Firestore Eloquent Library in Laravel provides convenient methods to perform updates. Let's explore how to update documents using the library's features.
 
+## Update Many Documents with ``updateMany()``
+
+:::warning
+Updating many documents in a collection can take a long time if there are a lot of documents in the sub collection.
+:::
+
+The ``updateMany()`` method allows you to update multiple documents in a Firestore collection based on a specified query. You can use this method to update fields of documents that match certain conditions.
+
+### Basic Update
+Let's update the ``age`` field of all documents in the ``users`` collection that have a ``role`` field with the value ``admin``.
+
+```php
+// Update all users with age 20 to age 25
+User::where(['role', '=', 'admin'])->updateMany(['age' => 25]);
+```
+
+### Update Multiple Fields
+You can also update multiple fields of documents that match a query. Let's update the ``name`` and ``age`` fields of all documents in the ``users`` collection that have a ``role`` field with the value ``admin``.
+
+```php
+// Update all users with age 20 to age 25
+User::where(['role', '=', 'admin'])->updateMany(['age' => 25, 'name' => 'John Doe']);
+```
+
 ## Partial Update with ``update()``
 
 The ``update()`` method allows you to update a single document in a Firestore collection. You can use this method to update fields of a document that match certain conditions.
@@ -19,9 +43,11 @@ Let's update the ``age`` field of the document with the ``id`` ``1234`` in the `
 // Update a user with the specified ID
 $userId = '1234';
 $user = User::find($userId);
-$updatedUser = $user->update([
+$updatedUser = $user->data()->update([
     'age' => 30
 ]);
+
+echo $updatedUser->age; // 30
 
 ```
 
@@ -33,20 +59,26 @@ You can also update multiple fields of a document. Let's update the ``status`` a
 // Update a user with the specified ID
 // Update a user with the specified ID
 $user = User::where(['user_id', '=', $userId])->first();
-$updatedUser = $user->update([
+$updatedUser = $user->data()->update([
     'age' => 30, 
     'status' => 'inactive'
 ]);
+
+echo $updatedUser->age; // 30
+echo $updatedUser->status; // inactive
 
 ```
 
 ```php
 // Update a user with the specified ID
 $user = User::where(['user_id', '=', $userId])->firstOrFail();
-$updatedUser = $user->update([
+$updatedUser = $user->data()->update([
     'age' => 30, 
     'status' => 'inactive'
 ]);
+
+echo $updatedUser->age; // 30
+echo $updatedUser->status; // inactive
 
 ```
 
