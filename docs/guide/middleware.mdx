@@ -1,31 +1,25 @@
 ---
-sidebar_position: 4
+sidebar_position: 10
 ---
 
-# Middlewares
+# Middleware
 
-## Authentication Middleware
-
-The **``f.auth``** can be used to only allow authenticated users to access a given route. It ensures that the user session is authenticated, redirecting to the login page if necessary. Additionally, it sets cache control headers to prevent caching of sensitive data. Since this middleware is already registered in your application, all you need to do is attach the middleware to a route definition:
+When `config/auth.php` uses the Firestore provider, prefer Laravel's built-in middleware:
 
 ```php
-Route::get('/profile', function () {
-    // Only authenticated users may access this route...
-})->middleware('f.auth');
+Route::middleware('auth')->get('/profile', ProfileController::class);
+Route::middleware('guest')->get('/login', LoginController::class);
 ```
 
-:::info
-To change the route which a user is redirected to when already authenticated, [See here](/docs/get-started/configuration#auth-url).
-:::
+These use Laravel's configured guard, including the Firestore provider documented in [Authentication](./authentication.mdx).
 
-## Unauthentication Middleware
-The **``f.guest``** can be used to only allow unauthenticated users to access a given route.
+## Legacy middleware
+
+The package still registers `f.auth` and `f.guest` for applications using `FAuth`:
 
 ```php
-Route::get('/login', function () {
-    // Only unauthenticated users may access this route...
-})->middleware('f.guest');
+Route::middleware('f.auth')->get('/profile', ProfileController::class);
+Route::middleware('f.guest')->get('/login', LoginController::class);
 ```
-:::info
-To change the route which a user is redirected to when not authenticated, [See here](/docs/get-started/configuration#guest-url).
-:::
+
+`f.auth` redirects unauthenticated visitors to the named `auth_url` route. `f.guest` redirects authenticated visitors to the named `guest_url` route. Configure both in `config/firebase.php`.

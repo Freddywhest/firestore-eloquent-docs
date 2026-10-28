@@ -1,0 +1,51 @@
+---
+sidebar_position: 8
+---
+
+# Performance guide
+
+Firestore cost and latency usually depend on the number of documents scanned, returned, or requested—not only the size of the PHP collection.
+
+## Prefer cursors over deep offsets
+
+Use `cursorPaginate()` for large lists and high-traffic APIs. `paginate()` and `simplePaginate()` use Firestore offsets, which scan skipped documents as page numbers grow. `paginate()` also performs an aggregate count.
+
+## Eager load list relationships
+
+Use `with()` before paginating or fetching a list. It batches related keys in groups of 30 and avoids one query per parent document.
+
+```php
+$rides = Ride::with('driverDetails')
+    ->orderByDesc('timeStamp')
+    ->cursorPaginate(50);
+```
+
+## Select only needed fields
+
+```php
+$rides = Ride::select(['id', 'status', 'driver_id'])
+    ->where(['status', 'active'])
+    ->get();
+```
+
+Include fields needed for ordering, pagination, relationship matching, and response output.
+
+## Use server aggregates
+
+`count()`, `sum()`, and `avg()` use Firestore aggregation queries. Do not fetch an entire collection just to calculate an aggregate in PHP.
+
+## Process large collections incrementally
+
+Use `chunk()` for callback-based work and `lazy()` for iteration. Both use cursor pages and bound application memory.
+
+## Batch independent updates
+
+`updateMany()` sends up to 500 updates in one Firestore commit request. This is much faster than calling `update()` in a loop. Each 500-write group is atomic; a workload larger than 500 is split into independent commits.
+
+## Design indexes deliberately
+
+Firestore automatically indexes individual fields, while compound filters and orderings may require composite indexes. Follow the index link in Firestore's error, then retest the real query and expected production data volume.
+
+## Measure live behavior
+
+Unit tests and the Firestore emulator validate correctness, but they do not reproduce production network latency, billing, index state, or workload. Before release, measure representative cursor, aggregate, relationship, and bulk-write queries against a safe project with production-like data.

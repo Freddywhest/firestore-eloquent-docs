@@ -37,7 +37,7 @@ The `SubCollection` class provides methods to configure and retrieve sub-collect
 - **`fillableFields($fields)`** → Specifies which fields can be inserted or updated.  
 - **`requiredFields($fields)`** → Lists fields that must be provided when inserting data.  
 - **`defaultFields($fields)`** → Assigns default values to fields if they are not provided.  
-- **`fieldTypes($fields)`** → Defines data types (`integer, string, array, object`).  
+- **`fieldTypes($fields)`** → Defines the same supported types as a normal model, including numbers, booleans, arrays, maps, timestamps, and null.
 - **`hiddenFields($fields)`** → Specifies fields to exclude from responses.  
 - **`keyToUse($key)`** → By default, the primary key of the parent model (`User`) is used to access sub-collections. If you want to use a different field, you can set it using this method.  
 - **`load()`** → Fetches the sub-collection data. 

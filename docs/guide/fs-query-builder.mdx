@@ -1,0 +1,201 @@
+---
+sidebar_position: 3
+---
+
+# `FS` query builder
+
+The `FS` facade is Firestore Eloquent's model-free query builder. It follows the style of Laravel's `DB::table()` API while using Firestore collections:
+
+```php
+use Roddy\FirestoreEloquent\Facade\FS;
+
+$rides = FS::collection('rides')
+    ->where('status', '=', 'completed')
+    ->orderByDesc('created_at')
+    ->get();
+```
+
+Laravel registers the global `FS` alias through package discovery, so this is also valid:
+
+```php
+$rides = FS::collection('rides')->where('status', 'completed')->get();
+```
+
+Importing the facade class explicitly is recommended for IDE navigation and static analysis.
+
+## Collection and table
+
+`collection()` is the preferred Firestore terminology. `table()` is an alias for developers familiar with Laravel's database query builder.
+
+```php
+FS::collection('rides');
+FS::table('rides');
+```
+
+The second argument sets a custom primary-key field:
+
+```php
+FS::collection('users', 'uid')->find('user-123');
+```
+
+Subcollection paths must end in a collection segment:
+
+```php
+FS::collection('users/user-123/notifications')->all();
+```
+
+## Retrieve documents
+
+```php
+$rides = FS::collection('rides')->all();
+
+$ride = FS::collection('rides')->find('ride-123');
+$ride = FS::collection('rides')->findOrFail('ride-123');
+
+$ride = FS::collection('rides')
+    ->where('status', 'completed')
+    ->first();
+```
+
+`all()` is an unfiltered collection read. Use `get()` after adding filters, ordering, selected fields, a limit, or an offset.
+
+## Laravel-style filters
+
+The raw builder accepts Laravel-style string arguments:
+
+```php
+FS::collection('rides')->where('status', 'completed')->get();
+FS::collection('rides')->where('fare', '>=', 50)->get();
+
+FS::collection('rides')
+    ->where('status', 'pending')
+    ->orWhere('status', 'accepted')
+    ->get();
+```
+
+The package's array syntax remains available:
+
+```php
+FS::collection('rides')->where([
+    ['status', '=', 'completed'],
+    ['fare', '>=', 50],
+])->get();
+```
+
+Set and array filters work like model queries:
+
+```php
+FS::collection('rides')->whereIn('status', ['pending', 'accepted'])->get();
+FS::collection('rides')->whereNotIn('status', ['cancelled'])->get();
+FS::collection('rides')->whereContains('tags', 'airport')->get();
+FS::collection('rides')->whereContainsAny('tags', ['airport', 'business'])->get();
+FS::collection('rides')->whereDate('created_at', '>=', '2026-01-01')->get();
+```
+
+Firestore's operator-combination and index requirements still apply.
+
+## Select, order, limit, and offset
+
+```php
+$rides = FS::collection('rides')
+    ->select('id', 'status', 'fare')
+    ->orderBy('created_at', 'desc')
+    ->limit(25)
+    ->get();
+```
+
+`select(['id', 'status'])` remains supported. Avoid deep offsets; prefer cursor pagination.
+
+## Values, lists, and existence
+
+```php
+$exists = FS::collection('rides')->where('status', 'pending')->exists();
+$missing = FS::collection('rides')->where('status', 'pending')->doesntExist();
+
+$status = FS::collection('rides')->where('id', 'ride-123')->value('status');
+
+$statuses = FS::collection('rides')->pluck('status');
+$statusesById = FS::collection('rides')->pluck('status', 'id');
+```
+
+`pluck()` returns an `Illuminate\Support\Collection`.
+
+## Pagination, aggregates, and streaming
+
+```php
+FS::collection('rides')->orderByDesc('created_at')->paginate(20);
+FS::collection('rides')->orderByDesc('created_at')->simplePaginate(20);
+FS::collection('rides')->orderByDesc('created_at')->cursorPaginate(20);
+
+FS::collection('rides')->where('status', 'completed')->count();
+FS::collection('rides')->where('status', 'completed')->sum('fare');
+FS::collection('rides')->where('status', 'completed')->avg('fare');
+
+FS::collection('rides')->orderBy('created_at')->chunk(200, function ($rides) {
+    // Process one cursor-backed page.
+});
+```
+
+See [Pagination and large result sets](./pagination.mdx) for the performance tradeoffs.
+
+## Insert documents
+
+```php
+FS::collection('rides')->insert([
+    'id' => 'ride-123',
+    'status' => 'pending',
+]);
+
+$id = FS::collection('rides')->insertGetId([
+    'status' => 'pending',
+    'driver_id' => 'driver-123',
+]);
+```
+
+`insert()` also accepts a list of documents. Each inserted document currently uses its own create request.
+
+## Update matching documents
+
+```php
+$updated = FS::collection('rides')
+    ->where('status', 'pending')
+    ->update(['status' => 'expired']);
+```
+
+The builder first reads the matching document IDs, then sends updates in Firestore commit groups of at most 500. Each commit group is atomic; multiple groups are not one global transaction.
+
+Use a restrictive filter for large collections. Updating a field used by the query does not affect the already collected IDs.
+
+## Delete matching documents
+
+```php
+$deleted = FS::collection('rides')
+    ->where('status', 'cancelled')
+    ->delete();
+```
+
+The builder reads matching IDs and sends batch delete commits of at most 500 documents.
+
+## Raw builder safety
+
+:::warning[No model protection]
+Like Laravel's `DB` query builder, `FS` bypasses model `$fillable`, `$required`, `$default`, `$fieldTypes`, `$hidden`, relationships, and local scopes. Validate input, authorize the operation, and encode values intentionally before raw writes.
+:::
+
+Use an [FModel query](./query-builder.mdx) when you need model validation, typed fields, hidden output, relationships, authentication models, or reusable local scopes.
+
+## Transactions
+
+Firestore Eloquent supports both callback and manual transactions:
+
+```php
+FS::transaction(function ($transaction) {
+    // Read first, then queue writes.
+});
+
+FS::beginTransaction();
+FS::commit();
+FS::rollback();
+```
+
+See the dedicated [Transactions guide](./transactions) for model integration, retries, rollback, write operations, restrictions, and complete examples.

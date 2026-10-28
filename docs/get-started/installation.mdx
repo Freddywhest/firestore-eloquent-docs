@@ -4,33 +4,73 @@ sidebar_position: 1
 
 # Installation
 
-### Requirements
-Before we start, make sure you have the following installed:
+## Requirements
 
 - PHP 8.1 or later
-- Laravel 9 or later (Recommended Latest Laravel version)
+- Laravel 9, 10, 11, 12, or 13
 - Composer
+- A Google Cloud or Firebase project with Firestore enabled
 
-### Installation
+## Install the package
 
-1. Install this package using composer:
+```bash
+composer require roddy/firestore-eloquent:^4.0
+```
 
-    ```bash
-    composer require roddy/firestore-eloquent
-    ```
+Laravel discovers the package service provider automatically.
 
-2. Copy and paste this to your `.env` file and replace `your-project-id` with your project ID:
+## Publish the configuration
 
+```bash
+php artisan vendor:publish --provider="Roddy\FirestoreEloquent\Providers\FModelProvider" --force
+```
 
-    ```dotenv
-    FIREBASE_PROJECT_ID=your-project-id
-    ```
+The command creates `config/firebase.php`.
 
-3. Publish the package configuration using Artisan:
+## Configure Firestore
 
+Firestore requests are authenticated by default in 4.0. Set the project ID and the path to a server-side service-account JSON file:
 
-    ```bash
-    php artisan vendor:publish --provider="Roddy\FirestoreEloquent\Providers\FModelProvider" --force
-    ```
+```dotenv
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CREDENTIALS=/absolute/path/to/service-account.json
+```
 
-You can locate the configuration file in `config/firebase.php`.
+You may use `GOOGLE_APPLICATION_CREDENTIALS` instead of `FIREBASE_CREDENTIALS`. When neither variable is set, the package tries Google Application Default Credentials, which is useful on Google Cloud.
+
+:::warning[Keep credentials private]
+Never commit a service-account JSON file or place it in a public web directory. Grant the service account only the permissions the application needs.
+:::
+
+If you use a named Firestore database, add:
+
+```dotenv
+FIREBASE_DATABASE_ID=your-database-id
+```
+
+The default database ID is `(default)`.
+
+## Use the emulator
+
+For local integration tests, point the package at the Firestore emulator:
+
+```dotenv
+FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
+FIREBASE_PROJECT_ID=demo-project
+```
+
+Emulator requests do not require a production access token.
+
+## Public-rule projects
+
+Unauthenticated production requests are disabled by default. Only enable them when the project intentionally uses public Firestore Security Rules:
+
+```dotenv
+FIREBASE_ALLOW_UNAUTHENTICATED=true
+```
+
+For normal server applications, keep this disabled and configure credentials.
+
+## Next step
+
+Review all [configuration options](./configuration.mdx), then [generate a model](../guide/artisan-command.mdx).

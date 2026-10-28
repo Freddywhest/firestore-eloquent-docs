@@ -1,0 +1,97 @@
+---
+sidebar_position: 9
+---
+
+# Sub collection
+A sub-collection is a nested collection within a Firestore document. This allows for better data organization and structuring.
+
+## Defining a sub collection
+In your model the model class, define a method that starts with sub, followed by the sub-collection name.
+
+```php
+class User extends FModel
+{
+    public function subProfile()
+    {
+        return SubCollection::primaryKey("id")->subCollection('profiles')->load();
+    }
+}
+```
+
+In this example:
+- `subProfile()` defines a sub-collection called `profiles`.
+- `primaryKey("id")` specifies that the primary key for this sub-collection is `id`.
+- `load()` fetches the sub-collection data.
+
+:::info
+Note: Make sure you start the method name with `sub` followed by the name of the sub collection.
+:::
+
+
+## Understanding the `SubCollection` Class Explained
+The `SubCollection` class provides methods to configure and retrieve sub-collections.
+
+### Main Methods:
+- **`subCollection($name)`** → Sets the sub-collection name. **[required]**
+- **`primaryKey($key)`** → Defines the primary key of the sub-collection. **[required]**
+- **`fillableFields($fields)`** → Specifies which fields can be inserted or updated.
+- **`requiredFields($fields)`** → Lists fields that must be provided when inserting data.
+- **`defaultFields($fields)`** → Assigns default values to fields if they are not provided.
+- **`fieldTypes($fields)`** → Defines data types (`integer, string, array, object`).
+- **`hiddenFields($fields)`** → Specifies fields to exclude from responses.
+- **`keyToUse($key)`** → By default, the primary key of the parent model (`User`) is used to access sub-collections. If you want to use a different field, you can set it using this method.
+- **`load()`** → Fetches the sub-collection data.
+
+### Example Usage of `SubCollection`:
+```php
+SubCollection::primaryKey("id")
+    ->subCollection('user_logs')
+    ->keyToUse("user_ID")
+    ->fillableFields(['log_id', 'action', 'timestamp'])
+    ->load();
+```
+
+This means:
+- A sub-collection named `user_logs` is being defined.
+- The primary key is `id`.
+- Instead of using the default primary key from `ZoneData`, it will use `user_ID` to access sub-collections.
+- Only `log_id`, `action`, and `timestamp` can be inserted or updated.
+
+### Usage of the sub collection
+
+```php
+class User extends FModel
+{
+    public function subProfile()
+    {
+        return SubCollection::primaryKey("id")->subCollection('profiles')->load();
+    }
+}
+
+
+$user = User::find($userId);
+//Or
+$user = User::where(['id', $userId])->first();
+
+//Getting the first item
+$profile = $user->subProfile()->first();
+
+//Filtering the data
+$profile = $user->subProfile()->where(['id', '123'])->first();
+
+//Getting all items
+$profiles = $user->subProfile()->all();
+
+//Getting the count of items
+$count = $user->subProfile()->count();
+
+```
+
+## Summary
+- A sub-collection is a collection inside a document.
+- To define one, create a method in your model starting with `sub`.
+- Use the `SubCollection` class to configure and retrieve sub-collections.
+- Define fields, primary keys, required values, and more using provided methods.
+- Use `keyToUse($key)` if you want to reference sub-collections using a different field instead of the default primary key.
+
+This approach ensures better Firestore organization and easy data retrieval. 🚀

@@ -1,0 +1,36 @@
+---
+sidebar_position: 1
+---
+
+# Installation
+
+### Requirements
+Before we start, make sure you have the following installed:
+
+- PHP 8.1 or later
+- Laravel 9 or later (Recommended Latest Laravel version)
+- Composer
+
+### Installation
+
+1. Install this package using composer:
+
+    ```bash
+    composer require roddy/firestore-eloquent
+    ```
+
+2. Copy and paste this to your `.env` file and replace `your-project-id` with your project ID:
+
+
+    ```dotenv
+    FIREBASE_PROJECT_ID=your-project-id
+    ```
+
+3. Publish the package configuration using Artisan:
+
+
+    ```bash
+    php artisan vendor:publish --provider="Roddy\FirestoreEloquent\Providers\FModelProvider" --force
+    ```
+
+You can locate the configuration file in `config/firebase.php`.

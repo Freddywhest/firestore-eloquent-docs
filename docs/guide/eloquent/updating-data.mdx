@@ -4,49 +4,30 @@ sidebar_position: 3
 
 # Updating data
 
-## Updating Documents in Firestore Eloquent Library
+## Update one document
 
-Updating documents in Firestore is a common operation, and the Firestore Eloquent Library in Laravel provides convenient methods to perform updates. Let's explore how to update documents using the library's features.
-
-## Partial Update with ``update()``
-
-The ``update()`` method allows you to update a single document in a Firestore collection. You can use this method to update fields of a document that match certain conditions.
-
-### Basic Update
-Let's update the ``age`` field of the document with the ``id`` ``1234`` in the ``users`` collection.
+Retrieve a result object, then call `update()` with fillable fields:
 
 ```php
-// Update a user with the specified ID
-$userId = '1234';
-$user = User::find($userId);
-$updatedUser = $user->update([
-    'age' => 30
-]);
+$user = User::findOrFail('user-123');
 
+$result = $user->update([
+    'age' => 30,
+    'status' => 'active',
+]);
 ```
 
-### Update Multiple Fields
+Version 4.0 sends a Firestore update mask. Fields omitted from the array are preserved, including fields omitted by a previous `select()` query. The primary key cannot be changed.
 
-You can also update multiple fields of a document. Let's update the ``status`` and ``age`` fields of the document with the ``id`` ``1234`` in the ``users`` collection.
+## Update many documents
 
 ```php
-// Update a user with the specified ID
-// Update a user with the specified ID
-$user = User::where(['user_id', '=', $userId])->first();
-$updatedUser = $user->update([
-    'age' => 30, 
-    'status' => 'inactive'
+$updated = User::updateMany([
+    ['id' => 'user-1', 'status' => 'active'],
+    ['id' => 'user-2', 'status' => 'inactive'],
 ]);
-
 ```
 
-```php
-// Update a user with the specified ID
-$user = User::where(['user_id', '=', $userId])->firstOrFail();
-$updatedUser = $user->update([
-    'age' => 30, 
-    'status' => 'inactive'
-]);
+Each item must include the model primary key. Other fields must be fillable. The method returns the number of requested writes and uses Firestore commit groups of at most 500 updates.
 
-```
-
+Each group is atomic. More than 500 updates are split into multiple commits and are not globally atomic.

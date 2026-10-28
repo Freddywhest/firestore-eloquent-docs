@@ -5,17 +5,19 @@ sidebar_position: 6
 # Contribute
 
 :::info[IMPORTANT]
-This project is still in development and there are some features needed to be implemented. If you want to contribute, please read the [How to contribute](#how-to-contribute) section.
+Check the current [roadmap](./todo.mdx) and open an issue before beginning a large API change.
 :::
 
 ## How to contribute
 
-- Check the [todo list](/docs/todo) to see what features are needed to be implemented and what features are already implemented but need to be tested.
-- Fork the repository or clone it.
-- Create a new branch for each feature or improvement you're working on.
-- Push your changes to your forked repository or your cloned repository.
-- When you're done working on your feature or improvement, create a pull request from your branch to the `develop` branch of the original repository.
-- After your pull request is merged, you can safely delete your branch.
+- Check the [roadmap](./todo.mdx) and existing GitHub issues.
+- Fork and clone the package repository.
+- Create a focused branch for one fix or feature.
+- Add or update PHPUnit coverage.
+- Run `composer test`, `composer validate`, and PHP syntax checks.
+- For Firestore behavior, test against the emulator; describe any live-project verification separately.
+- Update these docs when an API, configuration key, return type, performance characteristic, or supported version changes.
+- Open a pull request with the problem, approach, compatibility impact, and verification results.
 
 Feel free to contribute by opening issues or submitting pull requests. Your feedback and contributions are highly appreciated :heart: :heart: :heart:
 
@@ -25,5 +27,6 @@ Thanks goes to these wonderful people ([Contributors](https://github.com/FreddyW
 ## Acknowledgments
 
 - [Laravel](https://laravel.com/)
-- [Google Cloud Firestore Storage](https://cloud.google.com/)
+- [Google Cloud Firestore](https://cloud.google.com/firestore)
+- [Cloud Storage](https://cloud.google.com/storage)
 - [PHP](https://php.net)

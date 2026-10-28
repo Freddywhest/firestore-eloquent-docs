@@ -4,249 +4,26 @@ sidebar_position: 6
 
 # Relationships
 
-## ``hasOne`` Relationship
-
-The ``hasOne`` relationship is used to define a one-to-one relationship between two models. For example, a ``User`` model might have one ``Phone`` model:
-
-Defining a **``hasOne``** Relationship Let's explore the components of defining a hasOne relationship:
-
-``hasOne($model, $foreignKey, $localKey)``
-
-- **``$model``:** The related model class name (e.g., **'Profile'**). This is the class of the model that the current model (User) is related to.
-
-- **``$foreignKey``:** The foreign key in the related model's table that references the primary key of the current model (User). For example, if the Profile model has a column named ``user_id`` that references the id column in the User model, you would specify ``'user_id'`` as the ``$foreignKey``.
-
-- **``$localKey``:** The local key of the current model (User). This is the primary key by default. If the primary key is named something other than id, you can specify it here. In the example, 'id' is used as the default.
-
-### Accessing the Related Model
-
-Once the relationship is defined, you can access the related model using the hasOne relationship.
-
-### Example 1: Finding a User and their Profile of a User
+Define `fHasOne`, `fHasMany`, and `fBelongsTo` methods directly on an `FModel`. Version 4.0 includes the relationship methods automatically; do not import `FRelations` into each model.
 
 ```php
-// User Model
-use Roddy\FirestoreEloquent\Facade\FModel;
-use Roddy\FirestoreEloquent\Firestore\Eloquent\Traits\FRelations;
-
 class User extends FModel
 {
-    //Import this class
-    use FRelations;
-
-    protected $collection = 'users';
-    protected $primaryKey = 'user_id';
-    protected $fillable = ['name', 'email', 'password'];
-    protected $hidden = ['password'];
-
-
-    //HasOne Relationship
-    public function profile()
-    {
-        return $this->fHasOne(Profile::class, 'user_id', 'id');
-    }
-}
-
-
-//Find users by a specific condition and get a collection
-$user = User::where(['user_id', 'user1'])->first();
-
-//Access the user's profile
-$profile = $user->profile();
-
-//OR
-
-$profile = $user->profile;
-
-```
-
-### Example 2: Finding a User and their Profile of Users
-
-```php
-//User Model
-use Roddy\FirestoreEloquent\Facade\FModel;
-use Roddy\FirestoreEloquent\Firestore\Eloquent\Traits\FRelations;
-
-class User extends FModel
-{
-    //Import this class
-    use FRelations;
-
-    protected $collection = 'users';
-    protected $primaryKey = 'user_id';
-    protected $fillable = ['name', 'email', 'password'];
-    protected $hidden = ['password'];
-
-
-    //HasOne Relationship
-    public function profile()
-    {
-        return $this->fHasOne(Profile::class, 'user_id', 'id');
-    }
-}
-
-
-//Find users by a specific condition and get a collection
-$users = User::where(['user_id', '=', 'user1'])->get();
-
-//Access the user's profile
-$users->each(function ($user) {
-    $profile = $user->profile();
-});
-
-```
-
-
-
-## ``hasMany`` Relationship
-
-
-In Eloquent, the **``hasMany``** relationship is used to define a one-to-many relationship between two models. This means that each instance of the current model (e.g., **User**) can have multiple related records in another model (e.g., **Post**). The relationship is typically established through a foreign key in the related model that references the primary key of the current model.
-
-### Defining a ``hasMany`` Relationship
-
-Let's explore the components of defining a hasMany relationship:
-
-``hasMany($model, $foreignKey, $localKey)``
-
-- **``$model``:** The related model class name (e.g., **'Post'**). This is the class of the model that the current model (User) is related to.
-
-- **``$foreignKey``:** The foreign key in the related model's table that references the primary key of the current model (User). For example, if the Post model has a column named ``user_id`` that references the id column in the User model, you would specify ``'user_id'`` as the ``$foreignKey``.
-
-- **``$localKey``:** The local key of the current model (User). This is the primary key by default. If the primary key is named something other than id, you can specify it here. In the example, 'id' is used as the default.
-
-### Accessing the Related Model
-
-Once the relationship is defined, you can access the related model using the hasMany relationship.
-
-### Example 1: Finding a User and their Posts
-
-```php
-//User Model
-use Roddy\FirestoreEloquent\Facade\FModel;
-use Roddy\FirestoreEloquent\Firestore\Eloquent\Traits\FRelations;
-
-class User extends FModel
-{
-    //Import this class
-    use FRelations;
-    
-    protected $collection = 'users';
-    protected $primaryKey = 'user_id';
-    protected $fillable = ['name', 'email', 'password'];
-    protected $hidden = ['password'];
-
-    //HasMany Relationship
     public function posts()
     {
-        return $this->fHasMany(Post::class, 'user_id', 'id');
+        return $this->fHasMany(Post::class);
     }
 }
-
-
-//Find users by a specific condition and get a collection
-$users = User::where(['user_id', '=', 'user1'])->get();
-
-//Access the user's posts
-$users->each(function ($user) {
-    $posts = $user->posts();
-});
-
-```
-
-### Example 2: Finding a User and their Posts of a User
-
-```php
-//User Model
-use Roddy\FirestoreEloquent\Facade\FModel;
-use Roddy\FirestoreEloquent\Firestore\Eloquent\Traits\FRelations;
-
-class User extends FModel
-{
-    //Import this class
-    use FRelations;
-
-    protected $collection = 'users';
-    protected $primaryKey = 'user_id';
-    protected $fillable = ['name', 'email', 'password'];
-    protected $hidden = ['password'];
-
-    //HasMany Relationship
-    public function posts()
-    {
-        return $this->fHasMany(Post::class, 'user_id', 'id');
-    }
-}
-
-
-//Find users by a specific condition and get a collection
-$user = User::where(['user_id', '=', 'user1'])->first();
-
-
-//Access the user's posts
-$posts = $user->posts();
-});
-```
-
-## ``belongsTo`` Relationship
-
-The ``belongsTo`` relationship is used to define a one-to-one or one-to-many relationship between two models. This means that each instance of the related model (e.g., **Post**) can have one or more related records in the current model (e.g., **User**). The relationship is typically established through a foreign key in the current model that references the primary key of the related model.
-
-### Defining a ``belongsTo`` Relationship
-
-Let's explore the components of defining a belongsTo relationship:
-
-``belongsTo($model, $foreignKey, $localKey)``
-
-- **``$model``:** The related model class name (e.g., **'Post'**). This is the class of the model that the current model (User) is related to.
-
-- **``$foreignKey``:** The foreign key in the current model's table that references the primary key of the related model (User). For example, if the Post model has a column named ``user_id`` that references the id column in the User model, you would specify ``'user_id'`` as the ``$foreignKey``.
-
-- **``$localKey``:** The local key of the current model (User). This is the primary key by default. If the primary key is named something other than id, you can specify it here. In the example, 'id' is used as the default.
-
-### Accessing the Related Model
-
-Once the relationship is defined, you can access the related model using the belongsTo relationship.
-
-### Example 1: Finding a Post and its Author
-
-```php
-//Post Model
-use Roddy\FirestoreEloquent\Facade\FModel;
-use Roddy\FirestoreEloquent\Firestore\Eloquent\Traits\FRelations;
 
 class Post extends FModel
 {
-    //Import this class
-    use FRelations;
-
-    protected $collection = 'posts';
-    protected $primaryKey = 'post_id';
-    protected $fillable = ['title', 'content', 'user_id'];
-
-    //BelongsTo Relationship
-    public function user()
+    public function author()
     {
-        return $this->fBelongsTo(User::class, 'user_id', 'id');
+        return $this->fBelongsTo(User::class, 'id', 'user_id');
     }
 }
 
-
-//Find posts by a specific condition and get a collection
-$posts = Post::where(['post_id', '=', 'post1'])->get();
-
-//Access the post's author
-$posts->each(function ($post) {
-    $author = $post->user();
-});
-
+$posts = Post::with('author')->get();
 ```
 
-
-
-
-
-
-
-
-
+See the complete [Relationships guide](../relationships.mdx) for default keys, custom keys, lazy loading, batched eager loading, nesting, and constraints.

@@ -1,7 +1,201 @@
 ---
-sidebar_position: 6
+sidebar_position: 5
 ---
 
-# Query Buider
+# Query builder
 
-## Coming Soon
+Firestore Eloquent models expose concrete static methods, so Intelephense and other PHP language servers can discover the query API without an IDE helper package.
+
+For Laravel `DB::table()`-style access without a model, see the [`FS` query builder](./fs-query-builder.mdx).
+
+```php
+use App\FModels\Ride;
+
+$rides = Ride::where(['status', '=', 'completed'])
+    ->orderByDesc('timeStamp')
+    ->limit(25)
+    ->get();
+```
+
+## Model definition
+
+```php
+namespace App\FModels;
+
+use Roddy\FirestoreEloquent\Facade\FModel;
+
+class Ride extends FModel
+{
+    protected $collection = 'rides';
+    protected $primaryKey = 'id';
+
+    protected $fillable = [
+        'id', 'driver_id', 'status', 'fare', 'timeStamp',
+    ];
+
+    protected $required = ['status'];
+    protected $default = ['status' => 'pending'];
+
+    protected $fieldTypes = [
+        'fare' => 'number',
+        'timeStamp' => 'timestamp',
+    ];
+
+    protected $hidden = [];
+}
+```
+
+`$fillable` controls fields accepted by `create()`, `update()`, and `updateMany()`. `$required` applies during creation. `$default` fills absent creation values. `$fieldTypes` validates values and controls Firestore encoding.
+
+Supported type names include `integer`, `float`, `number`, `string`, `boolean`, `array`, `map`, `date`, `datetime`, `timestamp`, and `null`.
+
+## Retrieve documents
+
+```php
+// Entire collection. Do not add query clauses before all().
+$rides = Ride::all();
+
+// One document by its primary key.
+$ride = Ride::find('ride-123');
+$ride = Ride::findOrFail('ride-123');
+
+// First query result.
+$ride = Ride::where(['status', 'pending'])->first();
+$ride = Ride::where(['status', 'pending'])->firstOrFail();
+```
+
+Use `get()` to execute a structured query. `all()` is only for an unfiltered collection read.
+
+Returned documents provide property access and `toArray()`:
+
+```php
+echo $ride->status;
+$data = $ride->toArray();
+```
+
+## Where clauses
+
+A filter is either `[field, value]` or `[field, operator, value]`. The two-item form uses `=`.
+
+```php
+Ride::where(['status', 'completed'])->get();
+
+Ride::where(['fare', '>=', 50])->get();
+
+Ride::where([
+    ['status', '=', 'completed'],
+    ['fare', '>=', 50],
+])->get();
+```
+
+Supported comparison operators are `=`, `!=`, `<`, `<=`, `>`, and `>=`.
+
+Use `orWhere()` to OR its filter with the existing condition:
+
+```php
+Ride::where(['status', 'pending'])
+    ->orWhere(['status', 'accepted'])
+    ->get();
+```
+
+For an OR group without a preceding condition, pass `true` as the second argument:
+
+```php
+Ride::orWhere([
+    ['status', 'pending'],
+    ['status', 'accepted'],
+], true)->get();
+```
+
+Firestore itself restricts some combinations of inequality, disjunction, and array operators. A composite query may also require an index; Firestore includes an index-creation link in that error.
+
+## Set and array filters
+
+```php
+Ride::whereIn('status', ['pending', 'accepted'])->get();
+Ride::whereNotIn('status', ['cancelled'])->get();
+Ride::whereContains('tags', 'airport')->get();
+Ride::whereContainsAny('tags', ['airport', 'business'])->get();
+```
+
+`whereIn()` and `whereContainsAny()` accept 1–30 values. `whereNotIn()` accepts 1–10. These specialized filters cannot be combined with another specialized filter or `where()` in the same package query.
+
+## Dates and timestamps
+
+Use `whereDate()` when comparing a Firestore timestamp:
+
+```php
+Ride::whereDate(['timeStamp', '>=', '2026-01-01T00:00:00Z'])->get();
+
+Ride::whereDate([
+    ['timeStamp', '>=', '2026-01-01'],
+    ['timeStamp', '<', '2027-01-01'],
+])->get();
+```
+
+Date-looking strings are stored as strings unless their model field type is `date`, `datetime`, or `timestamp`.
+
+## Ordering, limits, offsets, and selected fields
+
+```php
+Ride::orderBy('timeStamp', 'desc')->get();
+Ride::orderByAsc('timeStamp')->get();
+Ride::orderByDesc('timeStamp')->get();
+Ride::limit(20)->get();
+Ride::offset(20)->limit(20)->get();
+Ride::select(['id', 'status', 'fare'])->get();
+```
+
+Avoid large offsets. Firestore still scans skipped documents, so use [cursor pagination](./pagination.mdx#cursor-pagination-recommended) for deep result sets.
+
+## Aggregates
+
+```php
+$count = Ride::where(['status', 'completed'])->count();
+$total = Ride::where(['status', 'completed'])->sum('fare');
+$average = Ride::where(['status', 'completed'])->avg('fare');
+```
+
+These use Firestore aggregation queries instead of downloading every matching document.
+
+## Create, update, and delete
+
+```php
+$data = Ride::create([
+    'driver_id' => 'driver-123',
+    'status' => 'pending',
+    'fare' => 42.50,
+    'timeStamp' => now(),
+]);
+
+$ride = Ride::findOrFail($data['id']);
+
+$ride->update([
+    'status' => 'completed',
+]);
+
+$ride->delete();
+```
+
+`create()` returns the stored field array, including the generated primary key. Updates are partial: fields not included in the update are preserved. Create and update values must satisfy `$fillable` and `$fieldTypes`.
+
+## Bulk updates
+
+```php
+$updated = Ride::updateMany([
+    ['id' => 'ride-1', 'status' => 'completed'],
+    ['id' => 'ride-2', 'status' => 'cancelled'],
+]);
+```
+
+The return value is the number of requested updates. Every item must include the model primary key, and all updated fields must be fillable. Writes are sent in groups of at most 500; each group is atomic, but multiple groups are not one global transaction.
+
+## IDE suggestions
+
+Version 4.0 declares the static model API directly on `FModel`. If suggestions do not appear after upgrading:
+
+```bash
+composer dump-autoload
+```
+
+Then reload or reindex the PHP language server. Ensure your model extends `Roddy\FirestoreEloquent\Facade\FModel` and that the editor is using the same project root as Composer.

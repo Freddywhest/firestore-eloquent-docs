@@ -1,0 +1,57 @@
+---
+sidebar_position: 3
+---
+
+# Upgrading to 4.0
+
+Version 4.0 supports PHP 8.1+ and Laravel 9–13. Update the dependency, publish the current configuration, and review the changes below.
+
+```bash
+composer require roddy/firestore-eloquent:^4.0
+php artisan vendor:publish --provider="Roddy\FirestoreEloquent\Providers\FModelProvider" --force
+```
+
+:::warning[Back up local configuration]
+The `--force` option replaces `config/firebase.php`. Copy any custom project, route, namespace, authentication, and upload settings before publishing, then merge them into the new file.
+:::
+
+## Credentials are now required by default
+
+Production REST calls use OAuth bearer tokens from a service account or Application Default Credentials. Configure `FIREBASE_CREDENTIALS` or `GOOGLE_APPLICATION_CREDENTIALS`.
+
+`FIREBASE_ALLOW_UNAUTHENTICATED=true` is an explicit escape hatch for projects intentionally protected by public Firestore rules. Do not use it as a substitute for server credentials.
+
+## Native Laravel authentication
+
+Applications may keep using `FAuth`, but 4.0 adds a `firestore` Laravel user provider. Configure it in `config/auth.php` and migrate to standard `Auth` APIs when practical. See [Authentication](../guide/authentication.mdx).
+
+## Pagination returns Laravel paginator objects
+
+- `paginate()` returns `LengthAwarePaginator` and performs an aggregate count.
+- `simplePaginate()` returns `Paginator` and skips the count.
+- `cursorPaginate()` returns `CursorPaginator` and avoids deep offsets.
+- `nextCursor()` and `previousCursor()` return Laravel `Cursor` objects. Call `?->encode()` when a string is needed.
+
+The former numeric `paginate($perPage, $page)` call remains supported. New code should use Laravel's normal signature or named arguments.
+
+## Date values are explicit
+
+Date-looking strings remain strings unless the field is declared as a date/timestamp in `$fieldTypes` or queried with `whereDate()`. This avoids silently changing ordinary string values.
+
+## Updates are partial
+
+Model updates use Firestore `updateMask` and preserve fields that were not selected or supplied. Updated fields must be listed in `$fillable`.
+
+## Relationships are batched
+
+Use `with()` to avoid one request per parent document. Version 4.0 groups relationship keys into Firestore-compatible batches and supports nested and constrained eager loading.
+
+## IDE completion
+
+Model query methods are concrete inherited static methods in 4.0. After upgrading, rebuild Composer autoload files and reindex your PHP language server:
+
+```bash
+composer dump-autoload
+```
+
+No IDE helper package is required for model methods such as `where()`, `with()`, `paginate()`, and `cursorPaginate()`.

@@ -1,0 +1,115 @@
+---
+sidebar_position: 7
+---
+
+# Relationships
+
+Version 4.0 supports `fHasOne`, `fHasMany`, and `fBelongsTo`. Relationship methods are defined directly on the model; no extra trait is required.
+
+## Define relationships
+
+```php
+namespace App\FModels;
+
+use Roddy\FirestoreEloquent\Facade\FModel;
+
+class Driver extends FModel
+{
+    protected $collection = 'drivers';
+
+    public function rides()
+    {
+        return $this->fHasMany(Ride::class);
+    }
+
+    public function profile()
+    {
+        return $this->fHasOne(DriverProfile::class);
+    }
+}
+
+class Ride extends FModel
+{
+    protected $collection = 'rides';
+
+    public function driverDetails()
+    {
+        return $this->fBelongsTo(Driver::class);
+    }
+}
+```
+
+With the default `id` primary key:
+
+- `Driver::rides()` and `Driver::profile()` match the driver's `id` to `driver_id` on the related document.
+- `Ride::driverDetails()` matches the ride's `driver_id` to the driver's `id`.
+
+Short class names such as `fHasMany('Ride')` resolve through `firebase.class_namespace`. Fully qualified class names are safer when models live in different namespaces.
+
+## Custom keys
+
+For `fHasMany()` and `fHasOne()`, arguments are related foreign key followed by parent local key:
+
+```php
+return $this->fHasMany(Ride::class, 'assigned_driver', 'employee_number');
+```
+
+For `fBelongsTo()`, arguments are related owner key followed by the current model's local key:
+
+```php
+return $this->fBelongsTo(Driver::class, 'employee_number', 'assigned_driver');
+```
+
+## Lazy loading
+
+```php
+$ride = Ride::findOrFail('ride-123');
+$driver = $ride->driverDetails;
+```
+
+The first property access runs the relation query; subsequent access on the same result uses the cached relation. A lazy `hasMany` property is an `Illuminate\Support\Collection`.
+
+Lazy loading is convenient for one parent, but it causes an N+1 request pattern inside a loop.
+
+## Eager loading
+
+```php
+$rides = Ride::with('driverDetails')
+    ->orderByDesc('timeStamp')
+    ->paginate(20);
+```
+
+`with()` collects parent keys, queries related documents in groups of 30, and attaches the matches. Loaded relationships are included by `toArray()` and JSON serialization.
+
+Eager loading also works with `find()`:
+
+```php
+$ride = Ride::with('driverDetails')->findOrFail('ride-123');
+```
+
+## Multiple and nested relationships
+
+```php
+$drivers = Driver::with(['profile', 'rides'])->get();
+
+$rides = Ride::with('driverDetails.company')->get();
+```
+
+Nested eager loading applies the remaining path to the related query.
+
+## Constrained eager loading
+
+```php
+$drivers = Driver::with([
+    'rides' => fn ($query) => $query->orderByDesc('timeStamp'),
+])->get();
+```
+
+The callback receives the related query and may mutate it or return it.
+
+## Performance guidance
+
+- Use `with()` whenever a list will access a relationship.
+- Eager loading uses one related query per group of 30 unique parent keys, not one per parent.
+- Nested relationships add queries at each level, so only load data the response needs.
+- Firestore relationships are application-side lookups, not server-side joins and not one atomic snapshot across collections.

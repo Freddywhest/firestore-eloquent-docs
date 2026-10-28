@@ -1,0 +1,14 @@
+---
+sidebar_position: 4
+---
+
+# Limitations
+- Firestore is a NoSQL database, meaning this package lacks support for schemas and database migrations.
+
+- It supports only three primary types of relationships: hasOne, hasMany, and belongsTo.
+
+- The primary key value is automatically generated, and customization is not possible. This aligns with Firestore's approach as a document database, where the document name serves as the primary key, which is also the case with this package.
+
+- The package does not support the a lot of features/methods that are available in Laravel Eloquent ORM and Query Builder because Firestore is a document database and does not support a lot these features.
+
+- The performance of this package is not as good as Laravel Eloquent ORM and Query Builder.

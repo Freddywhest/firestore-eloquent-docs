@@ -1,0 +1,25 @@
+---
+sidebar_position: 5
+---
+
+# Deleting Documents
+
+### Delete Single Document with ``delete()``
+
+The **``delete()``** method allows you to delete a single document in a Firestore collection. You can use this method to delete a document that matches a certain condition.
+
+#### Examples
+
+Let's say we want to delete a user with the **``age``** field set to **``20``**. We can use the **``delete()``** method to delete the document that matches this condition.
+
+```php
+// Delete a user with the specified ID
+$user = User::where(['user_id', '=', $userId])->first();
+$user->delete();
+```
+
+```php
+// Delete a user with the specified ID
+$user = User::where(['user_id', '=', $userId])->firstOrFail();
+$user->delete();
+```

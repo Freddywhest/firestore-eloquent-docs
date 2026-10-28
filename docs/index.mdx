@@ -1,26 +1,41 @@
 ---
 sidebar_position: 1
+slug: /
 ---
 
-# Introduction
+# Firestore Eloquent 4.0
 
-This Laravel library provides an Eloquent-like interface for interacting with Firestore, Google Cloud's NoSQL database. The library is designed to simplify common Firestore operations, making it easier to integrate Firestore into your PHP applications.
+Firestore Eloquent gives Laravel applications an Eloquent-style API for Google Cloud Firestore. Version 4.0 focuses on secure server authentication, native Laravel authentication, faster pagination and relationships, bounded-memory processing, bulk writes, and IDE-discoverable model methods.
 
-## What it is
+## Highlights
 
-Firestore Eloquent is a customized version of Laravel Eloquent designed for seamless integration with Google Firestore within Laravel applications. Firestore boasts exceptional scalability and speed, but it provides a more limited feature set compared to conventional SQL databases.
+- Familiar model queries: `where()`, `orderBy()`, `find()`, `first()`, aggregates, and more
+- Laravel-style `FS::collection()` query builder for model-free access
+- Native Laravel `Auth` support through the `firestore` user provider
+- Numbered, simple, and cursor pagination using Laravel paginator classes
+- `hasOne`, `hasMany`, and `belongsTo` relationships with batched eager loading
+- Cursor-backed `chunk()` and `lazy()` processing for large collections
+- Batched `updateMany()` commits of up to 500 writes per request
+- Service-account and Application Default Credentials authentication
+- Firestore emulator support
+- Concrete static model methods for Intelephense and other PHP language servers
 
-See the [Get Started](/docs/get-started/installation) guide for more details.
+## Start here
 
-## Features
+1. [Install and configure the package](./get-started/installation.mdx).
+2. [Create your first model](./guide/artisan-command.mdx).
+3. [Learn the query API](./guide/query-builder.mdx).
+4. Use the [`FS` query builder](./guide/fs-query-builder.mdx) for model-free collection access.
+5. For an existing application, read [Upgrading to 4.0](./get-started/upgrade-4.mdx).
 
-- Authentication
-- Artisan command for making models
-- Eloquent
-- HasMany and HasOne Relationships
-- Pagination
-- And many more.....
+:::tip[Choosing pagination]
+Use [cursor pagination](./guide/pagination.mdx#cursor-pagination-recommended) for large or frequently accessed collections. Numbered pagination is convenient, but deep Firestore offsets become slower and cost more document reads.
+:::
 
-## Donate
+## What this package is not
 
-Please consider donating if you think Firestore Eloquent is helpful to you or that my work is valuable. I am happy if you can help me [buy a cup of coffee](/docs/donate). ❤️
+Firestore is a document database, so Firestore Eloquent is not a drop-in replacement for every SQL Eloquent feature. It does not provide joins, migrations, or every Eloquent query method. See [Limitations](./limitations.mdx) before designing a data model.
+
+## Support the project
+
+If Firestore Eloquent is useful to you, consider [supporting its development](./donate.mdx).

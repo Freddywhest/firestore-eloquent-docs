@@ -1,0 +1,137 @@
+---
+sidebar_position: 6
+---
+
+# Pagination and large result sets
+
+Version 4.0 uses Laravel's native paginator classes. Paginators work with Blade links, JSON responses, resources, named query parameters, and Livewire pagination.
+
+## Choose the right paginator
+
+| Method | Exact total | Uses offsets | Best use |
+| --- | --- | --- | --- |
+| `cursorPaginate()` | No | No | Large or frequently visited collections |
+| `simplePaginate()` | No | Yes | Shallow next/previous navigation |
+| `paginate()` | Yes | Yes | Page numbers and an exact total |
+
+## Cursor pagination (recommended)
+
+```php
+$rides = Ride::orderByDesc('timeStamp')->cursorPaginate(20);
+```
+
+The package adds document name (`__name__`) as a stable tie-breaker when necessary. The current `cursor` query parameter is resolved automatically.
+
+```blade
+@foreach ($rides as $ride)
+    <p>{{ $ride->id }}</p>
+@endforeach
+
+{{ $rides->links() }}
+```
+
+For an API response, encode the Laravel cursor object:
+
+```php
+return response()->json([
+    'data' => $rides->items(),
+    'next_cursor' => $rides->nextCursor()?->encode(),
+    'previous_cursor' => $rides->previousCursor()?->encode(),
+]);
+```
+
+You may also pass a saved encoded cursor:
+
+```php
+$rides = Ride::orderByDesc('timeStamp')->cursorPaginate(
+    perPage: 20,
+    cursor: $request->string('cursor')->toString() ?: null,
+);
+```
+
+Keep the same filters and ordering when reusing a cursor. Every explicitly ordered field must exist on the returned documents.
+
+## Numbered pagination
+
+```php
+$rides = Ride::orderByDesc('timeStamp')->paginate(20);
+```
+
+This returns `Illuminate\Pagination\LengthAwarePaginator` and runs two Firestore operations: the page query and an aggregate count. It supports `total()`, `lastPage()`, and numbered links.
+
+```php
+return response()->json([
+    'data' => $rides->items(),
+    'current_page' => $rides->currentPage(),
+    'per_page' => $rides->perPage(),
+    'total' => $rides->total(),
+    'last_page' => $rides->lastPage(),
+]);
+```
+
+:::warning[Collection is not a paginator]
+`get()` and `all()` return an `Illuminate\Support\Collection`. They do not have `total()`, `lastPage()`, or paginator links. Call `paginate()`, `simplePaginate()`, or `cursorPaginate()` when your code needs pagination metadata.
+:::
+
+You can name the page parameter when a screen has more than one paginator:
+
+```php
+$rides = Ride::paginate(
+    perPage: 20,
+    pageName: 'rides_page',
+);
+```
+
+The older `paginate($perPage, $page)` form remains supported for compatibility.
+
+## Simple pagination
+
+```php
+$rides = Ride::orderByDesc('timeStamp')->simplePaginate(20);
+```
+
+This returns `Illuminate\Pagination\Paginator`. It avoids the aggregate count and supplies next/previous navigation, but still uses a Firestore offset for later numbered pages.
+
+## Livewire
+
+Use Livewire's normal `WithPagination` trait. Return the paginator itself from the computed property or render method; do not call `collect()` or `items()` before passing it to the view.
+
+```php
+use Livewire\WithPagination;
+
+class RideTable extends Component
+{
+    use WithPagination;
+
+    public function render()
+    {
+        return view('livewire.ride-table', [
+            'rides' => Ride::orderByDesc('timeStamp')->paginate(20),
+        ]);
+    }
+}
+```
+
+## Chunking and lazy iteration
+
+For exports, migrations, and background jobs, avoid loading the whole collection into memory:
+
+```php
+Ride::orderBy('timeStamp')->chunk(200, function ($rides, $page) {
+    foreach ($rides as $ride) {
+        // Process one bounded page.
+    }
+
+    return true;
+});
+```
+
+Return `false` from the callback to stop early.
+
+```php
+foreach (Ride::orderBy('timeStamp')->lazy(200) as $ride) {
+    // Each cursor-backed page is released as iteration advances.
+}
+```
+
+Page and chunk sizes must be between 1 and 1,000.

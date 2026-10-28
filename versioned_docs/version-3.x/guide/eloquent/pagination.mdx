@@ -1,0 +1,27 @@
+---
+sidebar_position: 7
+---
+
+# Pagination
+
+## Pagination in Firestore Eloquent Library
+
+If your Firestore collection contains a large number of documents, you may paginate your search results using the paginate method. This method will return an ``Illuminate\Pagination\LengthAwarePaginator`` instance just as if you had [paginated a traditional Eloquent query](https://laravel.com/docs/11.x/pagination).
+
+The **``paginate()``** method allows you to retrieve a specific number of documents per page, making it easier to navigate through large result sets.
+
+The **``paginate()``** method accepts two arguments:
+
+- The number of documents to retrieve per page
+- The current page number
+
+```php
+// Paginate all users with 10 users per page
+$currentPage = request()->get('page', 1);
+$users = User::paginate(10, $currentPage);
+
+// Get pagination links
+$users->links();
+```
+
+For more information about pagination, please refer to the [Pagination Documentation](/docs/guide/eloquent/pagination).

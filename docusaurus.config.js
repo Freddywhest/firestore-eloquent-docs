@@ -51,7 +51,7 @@ const config = {
           lastVersion: "current",
           versions: {
             current: {
-              label: "3.x",
+              label: "4.0",
             },
           },
         },
@@ -69,8 +69,8 @@ const config = {
       // Replace with your project's social card
       image: "img/logo_card.png",
       announcementBar: {
-        id: "announcementBar-3", // Increment on change
-        content: `🎉️ <b><a href="/docs">Firestore Eloquent v3.x</a> is now out!</b> 🥳️. --  <b>If you like Firestore Eloquent, give it a star ⭐️ on <a target="_blank" rel="noopener noreferrer" href="https://github.com/FreddyWhest/firestore-eloquent">GitHub</a></b>.`,
+        id: "announcementBar-4", // Increment on change
+        content: `🎉️ <b><a href="/docs">Firestore Eloquent 4.0</a> is now out!</b> 🥳️ — <b>If Firestore Eloquent helps you, give it a star ⭐️ on <a target="_blank" rel="noopener noreferrer" href="https://github.com/FreddyWhest/firestore-eloquent">GitHub</a></b>.`,
         backgroundColor: "#e6cc09",
         textColor: "black",
         isCloseable: false,

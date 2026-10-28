@@ -4,28 +4,25 @@ sidebar_position: 1
 
 # Artisan Command
 
-## Artisan Command List
-
-Laravel Firestore Eloquent provides a convenient Artisan command to generate new model quickly. Run the following command to make a new User Model. 
+Generate a Firestore model with:
 
 ```bash
 php artisan make:fmodel User
 ```
 
-This command will generate a new file in your project: ``app/FModel/User.php``.
+With the default configuration, this creates `app/FModels/User.php` in the `App\FModels` namespace.
 
-:::info[IMPORTANT NOTES]
-Note that if you have modified the [class_namespace](/docs/get-started/configuration/#class-namespace) value in the configuration file located at **``config/firestore.php``**, you can locate the new file generated using the namespace as the path. [See here](/docs/get-started/configuration/#class-namespace) for more details.
+:::info[Custom namespace]
+The generator uses `class_namespace` from `config/firebase.php`. See [Configuration](../get-started/configuration.mdx#model-namespace).
 :::
 
-## Artisan Command Options
+## Options
 
-The ``make:fmodel`` command has the following options:
-
-| Option | Description |
-| --- | --- |
-| ``--collection=`` | The collection name to be used for the model. |
-| ``--primaryKey`` | The primary key to be used for the model. |
+| Option | Short form | Description |
+| --- | --- | --- |
+| `--collection=` | `-c` | Firestore collection name |
+| `--primaryKey=` | `-p` | Model primary-key field |
+| `--force` | `-f` | Replace an existing generated model |
 
 ## Artisan Command Examples
 
@@ -35,25 +32,23 @@ The ``make:fmodel`` command has the following options:
 php artisan make:fmodel User
 ```
 
-### Generate a new model with a custom collection name
-
 ```bash
 php artisan make:fmodel User --collection=users
 ```
-
-### Generate a new model with a custom primary key
 
 ```bash
 php artisan make:fmodel User --primaryKey=uid
 ```
 
-### Generate a new model with a custom collection name and primary key
-
 ```bash
 php artisan make:fmodel User --collection=users --primaryKey=uid
 ```
 
-:::info[RESULT]
-The above command will generate a new file in your project: ``app/FModel/User.php`` with primaryKey ``uid`` and collection name ``users``.
-:::
+The generated model contains `$collection`, `$primaryKey`, `$fillable`, `$required`, `$default`, and `$fieldTypes`. Add writable fields to `$fillable` before calling `create()` or `update()`.
+
+```php
+protected $fillable = ['uid', 'email', 'name'];
+protected $required = ['email'];
+protected $fieldTypes = ['email' => 'string'];
+```
 

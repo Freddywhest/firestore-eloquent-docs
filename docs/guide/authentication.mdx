@@ -4,99 +4,94 @@ sidebar_position: 2
 
 # Authentication
 
-Web applications often require a robust authentication system for users to securely log in. Implementing such a feature can be complex and pose potential risks. Laravel Firestore Eloquent aims to simplify and expedite the process by providing tools that empower you to implement authentication swiftly, securely, and with ease.
+Version 4.0 integrates Firestore with Laravel's normal authentication guards. The older `FAuth` API remains available for backward compatibility.
 
-## Authenticating Users
+## Create a user model
 
-To utilize Laravel Firestore Eloquent authentication services, we'll access them through the ``FAuth`` class. Therefore, ensure to import the ``FAuth`` class at the top of your class. Now, let's delve into the attempt method.  Typically the attempt is employed to manage authentication attempts from your application's login form, the attempt method, if successful, should include session regeneration for the user to avert session fixation: 
+```bash
+php artisan make:fmodel User --collection=users
+```
 
-:::note[PROTECTING ROUTES]
-To add authentication middleware to your auth routes.[See here](/docs/guide/authentication).
-:::
+Configure fields used by registration and login:
 
-**Usage For Livewire**
 ```php
-<?php
-//Livewire Example
-
-//namespace ...;
-
-use Livewire\Component;
-use Roddy\FirestoreEloquent\Auth\FAuth;
-
-class Login extends Component
+class User extends FModel
 {
-    public $password, $email;
+    protected $collection = 'users';
 
-    protected $rules = [
-        //validation rules...
+    protected $fillable = [
+        'id', 'name', 'email', 'password',
     ];
 
-    protected $messages = [
-        //validation messages...
-    ];
-
-    public function login()
-    {
-        /**
-         * Validates the user input data.
-         */
-        $this->validate();
-
-        /**
-         * Attempt to authenticate the user with the given email and password.
-         * If the authentication fails, flash an error message to the session.
-         *
-         * @return void
-         */
-        if(!FAuth::attempt(['email' => $this->email, 'password' => $this->password])){
-            return session()->flash('credentials', 'Incorrect credentials');
-        }
-
-        /**
-         * Check if the user's account status is active before allowing login.
-         * If the user's account status is not active, flash a message indicating the reason for login failure.
-         */
-        if(FAuth::user()->status !== 'active'){
-            return session()->flash('credentials', 'You cannot login because your account is '.FAuth::user()->status );
-        }
-        request()->session()->regenerate();
-        return redirect()->route('dashboard');
-    }
+    protected $required = ['email', 'password'];
+    protected $hidden = ['password', 'remember_token'];
 }
 ```
----
 
-**Usage For Laravel**
+Store passwords with Laravel's `Hash::make()`. Never store plain-text passwords.
+
+The `password` field should be fillable if Laravel may automatically rehash it. The remember token is persisted separately and does not need to be fillable.
+
+## Configure Laravel
+
+Set the provider in `config/auth.php`:
 
 ```php
-<?php
-//Laravel Example
+'guards' => [
+    'web' => [
+        'driver' => 'session',
+        'provider' => 'users',
+    ],
+],
 
+'providers' => [
+    'users' => [
+        'driver' => 'firestore',
+        'model' => App\FModels\User::class,
+    ],
+],
+```
+
+To use a non-standard password field, add `password_field` to the provider and match `firebase.auth.password_field`.
+
+## Register a user
+
+```php
+use App\FModels\User;
+use Illuminate\Support\Facades\Hash;
+
+$user = User::create([
+    'name' => $request->string('name')->toString(),
+    'email' => $request->string('email')->toString(),
+    'password' => Hash::make($request->string('password')->toString()),
+]);
+```
+
+Enforce unique email addresses in application logic and Firestore rules; Firestore Eloquent does not provide a SQL-style unique constraint.
+
+## Log in
+
+```php
 namespace App\Http\Controllers;
- 
-use Illuminate\Http\Request;
+
 use Illuminate\Http\RedirectResponse;
-use Roddy\FirestoreEloquent\Auth\FAuth;
- 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
 class LoginController extends Controller
 {
-    /**
-     * Handle an authentication attempt.
-     */
     public function authenticate(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
- 
-        if (FAuth::attempt($credentials)) {
+
+        if (Auth::attempt($credentials, remember: $request->boolean('remember'))) {
             $request->session()->regenerate();
- 
-            return redirect()->route('dashboard');
+            return redirect()->intended(route('dashboard'));
         }
- 
+
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
         ])->onlyInput('email');
@@ -104,56 +99,61 @@ class LoginController extends Controller
 }
 ```
 
-## Retrieving The Authenticated User
-
-To retrieve the authenticated user, we'll use the ``user`` method on the ``FAuth`` class. This method will return an instance of the authenticated user:
+The provider supports Laravel's standard APIs:
 
 ```php
-<?php
-
-use Roddy\FirestoreEloquent\Auth\FAuth;
-
-// Retrieve the currently authenticated user...
-$user = FAuth::user();
-
-// Retrieve the currently authenticated user's ID...
-$id = FAuth::id();
+Auth::attempt($credentials);
+Auth::user();
+Auth::id();
+Auth::check();
+Auth::guest();
+Auth::login($user);
+Auth::loginUsingId($id);
+Auth::once($credentials);
+Auth::viaRemember();
+Auth::guard('web');
 ```
 
 ## Logging Out
 
-To log users out of your application, you may use the ``logout`` method on the ``FAuth`` class. This will clear the authentication information in the user's session:
+```php
+Auth::logout();
+$request->session()->invalidate();
+$request->session()->regenerateToken();
+
+return redirect('/');
+```
+
+## Protect routes
+
+Use Laravel's built-in middleware with the native provider:
 
 ```php
-<?php
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', DashboardController::class);
+});
 
-use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
+Route::middleware('guest')->group(function () {
+    Route::get('/login', LoginController::class);
+});
+```
+
+HTTP Basic Auth methods such as `Auth::basic()` use the configured provider too. Use them only over HTTPS.
+
+## Legacy FAuth
+
+Existing applications may continue using:
+
+```php
 use Roddy\FirestoreEloquent\Auth\FAuth;
- 
-/**
- * Log the user out of the application.
- */
-public function logout(Request $request): RedirectResponse
-{
-    FAuth::logout();
- 
-    $request->session()->invalidate();
- 
-    $request->session()->regenerateToken();
- 
-    return redirect('/');
-}
+
+FAuth::attempt(['email' => $email, 'password' => $password]);
+FAuth::user();
+FAuth::id();
+FAuth::check();
+FAuth::logout();
+
+fauth()->user();
 ```
 
-## Authentication helper
-
-The ``fauth`` function returns an authenticator instance. You may use it as an alternative to the ``FAuth`` class:
-
-```php
-// Retrieve the currently authenticated user...
-$user = fauth()->user();
-
-// Retrieve the currently authenticated user's ID...
-$id = fauth()->id();
-```
+`FAuth` uses the `auth_model`, `auth_url`, and `guest_url` settings in `config/firebase.php`. New applications should prefer Laravel's provider and built-in middleware.

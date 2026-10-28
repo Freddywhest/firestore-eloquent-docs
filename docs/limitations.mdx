@@ -3,12 +3,34 @@ sidebar_position: 4
 ---
 
 # Limitations
-- Firestore is a NoSQL database, meaning this package lacks support for schemas and database migrations.
 
-- It supports only three primary types of relationships: hasOne, hasMany, and belongsTo.
+Firestore Eloquent follows Firestore's document model and REST query capabilities. It does not reproduce every feature of SQL Eloquent.
 
-- The primary key value is automatically generated, and customization is not possible. This aligns with Firestore's approach as a document database, where the document name serves as the primary key, which is also the case with this package.
+## Data model
 
-- The package does not support the a lot of features/methods that are available in Laravel Eloquent ORM and Query Builder because Firestore is a document database and does not support a lot these features.
+- There are no SQL schemas, migrations, joins, foreign-key constraints, or database-enforced uniqueness.
+- Relationships are application-side Firestore queries, not server-side joins.
+- Supported relationship types are `fHasOne`, `fHasMany`, and `fBelongsTo`.
+- The default primary-key field is `id`. You may configure another field, but its value is still used as the Firestore document ID.
+- There is no automatic cascade delete or referential-integrity enforcement.
 
-- The performance of this package is not as good as Laravel Eloquent ORM and Query Builder.
+## Queries
+
+- The query builder exposes a focused subset of Laravel's Eloquent API.
+- Firestore operator-combination limits still apply.
+- Compound filters and ordering may require composite Firestore indexes.
+- Large offsets are slow and bill reads for skipped documents. Prefer `cursorPaginate()`.
+- Ordered cursor fields must exist on each returned document.
+- `all()` reads the collection and can be expensive for large data sets. Use a bounded query, pagination, `chunk()`, or `lazy()`.
+
+## Consistency and atomicity
+
+- Eager-loaded relationships are separate queries and are not one atomic snapshot with the parent query.
+- `updateMany()` is atomic within each group of at most 500 writes. More than 500 updates use multiple commits and are not globally atomic.
+- General multi-document transactions are not currently exposed by the package.
+
+## Runtime scope
+
+- Version 4.0 targets Laravel 9–13 on PHP 8.1+.
+- Standalone core PHP and other frameworks are not supported.
+- Emulator tests do not reproduce production latency, billing, security rules, or index state.

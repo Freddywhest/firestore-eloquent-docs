@@ -4,60 +4,83 @@ sidebar_position: 2
 
 # Configuration
 
-All configuration settings can be found in the **firebase.php** file, which is located in the config directory under **``config/firebase.php``**.
-
-:::info[IMPORTANT]
-If the file does not exists, you need to run the following artisan command:
+The published settings live in `config/firebase.php`.
 
 ```bash
 php artisan vendor:publish --provider="Roddy\FirestoreEloquent\Providers\FModelProvider" --force
-  ```
-:::
-
-
-## Guest Url
-
-To modify the URL to which a user is redirected when attempting to access routes with the **``f.guest``** middleware after logging in, navigate to the **``config/firebase.php``** file and update the **``guest_url``** value. The default setting is **``home``**.
-
-## Auth Url
-
-To modify the URL to which a user is redirected when attempting to access routes with the **``f.auth``** middleware after logging out, navigate to the **``config/firebase.php``** file and update the **``auth_url``** value. The default setting is **``login``**.
-
-## Auth Model
-
-To modify the model used for authentication, navigate to the **``config/firebase.php``** file and update the **``auth_model``** value. The default setting is **``App\\FModels\\User``**. Adjust it to the appropriate model for authentication.
-
-:::info[IMPORTANT]
-Ensure that the specified model exists, or you can create it using the following artisan command:
-
-```bash
-php artisan make:fmodel User
-  ```
-See more about [FModels Artisan Commands](/docs/guide/artisan-command).
-:::
-
-## Class Namespace
-
-To alter the location or class namespace for the creation of models, navigate to the **``config/firebase.php``** file and modify the ``class_namespace`` to the desired namespace or location.
-
-:::note[NOTE]
-Note that models are generated in the location based on the specified namespace provided. For example, if the namespace is set to ``App\\FModels\\``, the models will be created in the ``app/FModels`` directory.
-
-The default setting is **``App\\FModels``**.
-:::
-
-## Firebase/Firestore Project Id
-
-To obtain the Firebase Project Id, you need to follow these steps:
-
-1. Go to the [Firebase Console](https://console.firebase.google.com/) and select your project.
-2. Click on the **Project Overview** button.
-3. Click on the **Settings** button and select **Project Settings**.
-4. Copy the **Project ID**.
-5. Update .env File with the following:
-- Open your .env file and add the following line, replacing ``your-project-id`` with the correct project id:
-```dotenv
-FIREBASE_PROJECT_ID=your-project-id
 ```
 
-The Project ID is a unique identifier for your Firebase project. You can use this Project ID when configuring Firebase services or integrating Firebase with other platforms.
+## Environment reference
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `FIREBASE_PROJECT_ID` | none | Required Firestore project ID |
+| `FIREBASE_DATABASE_ID` | `(default)` | Firestore database ID |
+| `FIREBASE_CREDENTIALS` | none | Service-account JSON path |
+| `GOOGLE_APPLICATION_CREDENTIALS` | none | Fallback credentials path used by Google tooling |
+| `FIREBASE_PROJECT` | `app` | Key under `firebase.projects` |
+| `FIRESTORE_EMULATOR_HOST` | none | Emulator host, such as `127.0.0.1:8080` |
+| `FIREBASE_ALLOW_UNAUTHENTICATED` | `false` | Permit intentional public-rule production access |
+| `GOOGLE_CLOUD_STORAGE_BUCKET` | none | Bucket used by file uploads |
+| `FIREBASE_UPLOAD_MAX_SIZE` | `10485760` | Maximum upload size in bytes |
+
+## Multiple projects
+
+`firebase.default` selects a project from `firebase.projects`. Add another project configuration when an application needs it:
+
+```php
+// config/firebase.php
+'default' => env('FIREBASE_PROJECT', 'app'),
+
+'projects' => [
+    'app' => [
+        'credentials' => env('FIREBASE_CREDENTIALS'),
+        'database' => [
+            'project_id' => env('FIREBASE_PROJECT_ID'),
+            'database_id' => env('FIREBASE_DATABASE_ID', '(default)'),
+        ],
+    ],
+],
+```
+
+## Model namespace
+
+`class_namespace` controls where `make:fmodel` creates models and how short relationship names are resolved.
+
+```php
+'class_namespace' => 'App\\FModels',
+```
+
+The default creates models in `app/FModels`. You may use a fully qualified class name in relationships regardless of this setting.
+
+## Authentication settings
+
+The legacy `FAuth` helper uses `auth_model`. The native Laravel provider reads its model from `config/auth.php` and falls back to this value.
+
+```php
+'auth_model' => App\FModels\User::class,
+
+'auth' => [
+    'password_field' => 'password',
+    'remember_token_field' => 'remember_token',
+],
+```
+
+`guest_url` and `auth_url` are named routes used by the package's legacy `f.guest` and `f.auth` middleware.
+
+## Upload restrictions
+
+The maximum size is measured in bytes. An empty MIME-type list allows all detected types; define an allow-list for user uploads:
+
+```php
+'upload' => [
+    'max_size' => env('FIREBASE_UPLOAD_MAX_SIZE', 10 * 1024 * 1024),
+    'allowed_mime_types' => [
+        'image/jpeg',
+        'image/png',
+        'application/pdf',
+    ],
+],
+```
+
+The package generates a UUID-based object name and sanitizes the destination path, but your application should still validate the upload before calling the storage method.

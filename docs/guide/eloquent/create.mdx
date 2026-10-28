@@ -2,28 +2,29 @@
 sidebar_position: 4
 ---
 
-# Create Document
+# Create documents
 
-## ``create()``
-
-The **``create()``** method allows you to add new documents to your Firestore collection. It is a powerful and flexible way to insert data into the database while adhering to the specified model rules and configurations.
-
-**``create(array $data)``**
-
-### Parameters
-
-- **``$data``** (array) - The data to be inserted into the database. The data must be an associative array with the keys being the field names and the values being the field values. The data must adhere to the model rules and configurations.
-
-### Usage
-    
-```php
-$newUser = User::create(['name' => 'John', 'age' => 20]);
-```
-
-### Examples
+Add writable fields to the model's `$fillable` property, then call `create()`:
 
 ```php
-$newUser = User::create(['name' => 'John', 'age' => 20]);
-echo $newUser->name; //Result: John
+class User extends FModel
+{
+    protected $collection = 'users';
+    protected $fillable = ['id', 'name', 'email', 'created_at'];
+    protected $required = ['name', 'email'];
+    protected $default = ['created_at' => null];
+    protected $fieldTypes = ['created_at' => 'timestamp'];
+}
+
+$data = User::create([
+    'name' => 'John',
+    'email' => 'john@example.com',
+    'created_at' => now(),
+]);
+
+echo $data['id'];
 ```
 
+`create()` returns the stored field array, not a model result object. The package generates the primary key when it is absent. If a supplied primary key is not fillable, it is ignored and a new key is generated.
+
+Defaults apply only to missing fillable fields. Required fields are checked on creation, and declared field types are validated before the request is sent.

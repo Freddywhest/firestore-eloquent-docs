@@ -2,6 +2,15 @@
 sidebar_position: 10
 ---
 
-# Like Method
+# Text search and `LIKE`
 
-## Coming Soon
+Firestore does not provide SQL `LIKE` or arbitrary substring search, so Firestore Eloquent does not implement a `like()` method.
+
+Depending on the feature, use one of these designs:
+
+- Exact match with `where()`
+- Membership in an array field with `whereContains()`
+- A normalized prefix field and bounded range query designed for the application
+- A dedicated search service for full-text, typo-tolerant, or ranked search
+
+`whereContains()` means Firestore `array-contains`; it does not search within a string.

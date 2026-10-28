@@ -1,0 +1,141 @@
+---
+sidebar_position: 4
+---
+
+# Transactions
+
+Firestore transactions atomically apply writes that depend on documents read during the same operation. Firestore Eloquent supports a retrying callback API and Laravel-style manual control.
+
+## Callback transactions
+
+Use `FS::transaction()` for most transactions:
+
+```php
+use Roddy\FirestoreEloquent\Firestore\FirestoreTransaction;
+use RuntimeException;
+
+$newBalance = FS::transaction(function (FirestoreTransaction $transaction) {
+    $account = $transaction
+        ->collection('accounts')
+        ->findOrFail('account-1');
+
+    $newBalance = $account->balance - 50;
+
+    if ($newBalance < 0) {
+        throw new RuntimeException('Insufficient balance.');
+    }
+
+    $transaction->update('accounts', 'account-1', [
+        'balance' => $newBalance,
+    ]);
+
+    $transaction->create('ledger_entries', [
+        'account_id' => 'account-1',
+        'amount' => -50,
+        'created_at' => now(),
+    ]);
+
+    return $newBalance;
+});
+```
+
+The callback return value becomes the return value of `FS::transaction()`. An exception rolls back the attempt and is rethrown.
+
+When Firestore reports `ABORTED` contention, the package starts a new transaction and reruns the complete callback. It uses five attempts by default:
+
+```php
+FS::transaction(function (FirestoreTransaction $transaction) {
+    // Read, calculate, then queue writes.
+}, attempts: 3);
+```
+
+:::warning[The callback may execute more than once]
+Do not send mail, dispatch irreversible jobs, charge payments, or mutate another external system inside the callback. Return the result and perform those side effects only after the transaction succeeds.
+:::
+
+## Transaction operations
+
+Use the normal `FS` query builder for transaction-scoped reads, then queue writes on the transaction:
+
+```php
+FS::transaction(function (FirestoreTransaction $transaction) {
+    $ride = $transaction->collection('rides')->findOrFail('ride-1');
+
+    $pending = $transaction->collection('rides')
+        ->where('status', 'pending')
+        ->get();
+
+    // All reads are complete. Writes may now be queued.
+    $transaction->insert('audit_logs', ['message' => 'Ride changed']);
+    $transaction->create('notifications', ['ride_id' => $ride->id]);
+    $transaction->update('rides', $ride->id, ['status' => 'completed']);
+    $transaction->delete('ride_locks', $ride->id);
+});
+```
+
+`insert()` is an alias for `create()` and returns the chosen or generated document ID. `update()` performs a partial update and requires the document to exist. `create()` fails if that document already exists.
+
+## Manual transactions
+
+Use `beginTransaction()`, `commit()`, and `rollback()` when a transaction must span code that does not fit naturally in one callback:
+
+```php
+try {
+    FS::beginTransaction();
+
+    $ride = Ride::findOrFail('ride-1');
+
+    $ride->update([
+        'status' => 'completed',
+    ]);
+
+    FS::commit();
+} catch (\Throwable $exception) {
+    FS::rollback();
+
+    throw $exception;
+}
+```
+
+While a manual transaction is active:
+
+- `FModel` reads such as `Ride::findOrFail()` automatically use the transaction token.
+- Updates and deletes on results read inside the transaction are queued until `FS::commit()`.
+- Model `create()` and `updateMany()` calls are queued and retain model fillable/type validation.
+- `FS::collection()` queries and writes automatically join the active transaction.
+- `FS::rollback()` discards queued writes and is safe when no transaction is active.
+
+Only models and builders created after `FS::beginTransaction()` are enlisted.
+
+## Check transaction state
+
+```php
+if (FS::inTransaction()) {
+    FS::rollback();
+}
+```
+
+Calling `FS::commit()` without an active transaction throws an exception. Starting a second transaction while one is active is also rejected.
+
+## Manual versus callback transactions
+
+| Behavior | `FS::transaction()` | Manual API |
+| --- | --- | --- |
+| Commit on success | Automatic | Call `FS::commit()` |
+| Rollback on exception | Automatic | Call `FS::rollback()` |
+| Retry `ABORTED` contention | Automatic | Not automatic |
+| Model and raw-builder integration | Yes | Yes |
+| Best use | Most transactions | Transactions spanning several application methods |
+
+Prefer the callback API when automatic contention retries are important. Manual transactions do not replay the surrounding application code.
+
+## Rules and limits
+
+- Execute every transaction read before queueing the first write.
+- A read after a queued write throws an exception.
+- Queue at most 500 writes in one transaction.
+- All queued writes commit atomically and in order.
+- Firestore request-size, lock, idle, and total-duration limits still apply.
+- Transaction reads do not see writes previously queued in the same transaction.
+
+Use ordinary `insert()`, `updateMany()`, or query-level writes when no write depends on a transaction read; they avoid transaction lock and retry overhead.

@@ -4,345 +4,51 @@ sidebar_position: 2
 
 # Retrieving data
 
-The library provides flexible and convenient methods for retrieving documents from Firestore. Whether you want to retrieve all documents, filter based on specific criteria, or find a document by its ID.
-
-## Retrieving first documents
-
-### ``first()`` method
-
-The **``first()``** method is used to retrieve the first document from the Firestore database that matches the current query parameters. If there are multiple documents that meet the criteria, only the first one encountered will be returned. 
+## Collections and single documents
 
 ```php
-// Retrieves the first user with age 20
-$user = User::where(['age' => 20])->first();
-
-// Retrieves the first user without any filters
-$user = User::first();
-
-// Get the user ID
-$userId = $user->id;
-
-// Get the user name
-$userName = $user->name;
-```
-
-### ``firstOrFail()`` method
-
-The **``firstOrFail()``** method is used to retrieve the first document from the Firestore database that matches the current query parameters. If there are multiple documents that meet the criteria, only the first one encountered will be returned. If no document is found, an exception will be thrown.
-
-```php
-// Retrieves the first user with age 20
-$user = User::where(['age' => 20])->firstOrFail();
-
-// Retrieves the first user without any filters
-$user = User::firstOrFail();
-
-// Get the user ID
-$userId = $user->id;
-
-// Get the user name
-$userName = $user->name;
-```
-
-### ``find(string $documentId)`` method
-
-The **``find()``** method is used to retrieve a document from the Firestore database by its ID.
-
-```php
-// Retrieves the user with ID 123
-$user = User::find('123');
-
-// Get the user ID
-$userId = $user->id;
-
-// Get the user name
-$userName = $user->name;
-```
-
-## Retrieving all documents
-
-Retrieving all documents from a Firestore collection is a common use case, and the Firestore Eloquent Library in Laravel simplifies this process with the ``all()`` method. This section will guide you through using this method and provide additional insights.
-
-### ``all()`` method
-
-The **``all()``** method is used to retrieve all documents from a Firestore collection. This method is useful when you want to retrieve all documents from a collection without any filtering or sorting.
-
-```php
-// Retrieves all users
 $users = User::all();
-```
-#### Example Use Case
 
-The **``all()``** method is useful when you want to retrieve all documents from a collection without any filtering or sorting.
+$user = User::find('user-123');
+$user = User::findOrFail('user-123');
+
+$user = User::where(['email', 'person@example.com'])->first();
+$user = User::where(['email', 'person@example.com'])->firstOrFail();
+```
+
+`all()` returns an `Illuminate\Support\Collection` and may be expensive on a large collection. Use a bounded query or pagination when the collection can grow.
+
+## Execute a query
 
 ```php
-// UserController.php
-
-public function index()
-{
-    $users = User::all();
-
-    return view('users.index', compact('users'));
-}
+$users = User::where([
+    ['status', '=', 'active'],
+    ['age', '>=', 18],
+])->orderByDesc('created_at')->limit(50)->get();
 ```
+
+`get()` returns an `Illuminate\Support\Collection`. Do not call `get()` without a filter, order, limit, offset, or selection; use `all()` for an unstructured collection read.
+
+## Specialized filters
 
 ```php
-// index.blade.php
-
-@foreach ($users as $user)
-    <p>This is user {{ $user->name }}</p>
-@endforeach
+User::whereIn('role', ['admin', 'staff'])->get();
+User::whereNotIn('status', ['blocked'])->get();
+User::whereContains('skills', 'php')->get();
+User::whereContainsAny('skills', ['php', 'laravel'])->get();
+User::whereDate(['created_at', '>=', '2026-01-01'])->get();
 ```
 
-### Paginating Results
+`whereContains()` and `whereContainsAny()` query Firestore array fields; they are not substring searches.
 
-If your Firestore collection contains a large number of documents, you may paginate your search results using the paginate method. This method will return an ``Illuminate\Pagination\LengthAwarePaginator`` instance just as if you had [paginated a traditional Eloquent query](https://laravel.com/docs/11.x/pagination).
+## Pagination
 
 ```php
-// UserController.php
-
-public function index()
-{
-    $currentPage = request()->get('page', 1);
-    //It's required to pass the current page to the paginate method
-    $users = User::paginate(10, $currentPage);
-
-    return view('users.index', compact('users'));
-}
+$users = User::orderByDesc('created_at')->cursorPaginate(20);
 ```
 
-```php
-// index.blade.php
+See [Pagination and large result sets](../pagination.mdx) for cursor, simple, numbered, Livewire, chunk, and lazy examples.
 
-@foreach ($users as $user)
-    <p>This is user {{ $user->name }}</p>
-@endforeach
+## Full query reference
 
-{!! $users->links() !!}
-```
-
-The **``links()``** method generates the necessary pagination links for navigating through the result set. 
-
-:::info[MORE ABOUT PAGINATION]
-For more information about pagination, please refer to the [Pagination Documentation](/docs/guide/eloquent/pagination).
-:::
-
-
-## Filtering Documents
-
-Filtering documents is a crucial aspect when working with Firestore, and the Firestore Eloquent Library in Laravel provides various methods to construct precise queries. Let's explore advanced techniques for filtering documents.
-
-:::warning
-Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
-:::
-
-### Basic Filtering with ``where()``
-The **``where()``** method allows you to filter documents based on one or more criteria. It takes an associative array where keys represent field names, and values represent the conditions:
-
-:::warning
-Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
-:::
-
-```php
-// Retrieve users with age 25
-$filteredUsers = User::where(['age', 25])->get();
-
-// OR
-$filteredUsers = User::where([['age', 25], ['name', '=', 'John']])->get();
-
-// in your blade file
-@foreach ($filteredUsers as $filteredUser)
-    <p>This is user {{ $filteredUser->name }}</p>
-@endforeach
-```
-
-You can also use different comparison operators, such as ``"=", ">", "<", ">=", "<=", "!="``, to create more complex queries:
-
-```php
-
-// Retrieve users with age greater than 25
-$filteredUsers = User::where(['age', '>', 25])->get();
-
-// Retrieve users with age less than or equal to 25
-$filteredUsers = User::where(['age', '<=', 25])->get();
-
-// in your blade file
-@foreach ($filteredUsers->data() as $filteredUser)
-    <p>This is user {{ $filteredUser->name }}</p>
-@endforeach
-```
-
-:::warning
-Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
-:::
-
-### Advanced Filtering with ``orWhere()``
-
-For more complex queries involving AND and OR conditions, ``orWhere()`` methods:
-
-:::warning
-Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
-:::
-
-#### AND conditions
-
-```php
-// Retrieve users named 'John' and aged 25
-$andFilteredUsers = User::where([['name', 'John'], ['age' => 25]])->get();
-
-// in your blade file
-@foreach ($andFilteredUsers->data() as $andFilteredUser)
-    <p>This is user {{ $andFilteredUser->name }}</p>
-@endforeach
-
-```
-
-#### OR conditions
-
-```php
-// Retrieve users named 'John' or aged 25
-$orFilteredUsers = User::where([['name', 'John'], ['age' => 25]])->orWhere([['name', 'Jane'], ['age' => 30]])->get();
-
-```
-
-These methods provide a powerful way to construct intricate filters for your Firestore queries.
-
-### Filtering with ``whereIn()``
-
-The ``whereIn()`` method allows you to filter documents based on a list of values.
-
-```php
-// Retrieve users with age in the list [25, 30]
-$inFilteredUsers = User::whereIn('age', [25, 30])->get();
-
-```
-
-### Filtering with ``whereNotIn()``
-
-The ``whereNotIn()`` method allows you to filter documents based on a list of values.
-
-```php
-// Retrieve users with age not in the list [25, 30]
-$notInFilteredUsers = User::whereNotIn('age', [25, 30])->get();
-
-```
-
-### Filtering with ``whereContains()``
-
-The ``whereContains()`` method allows you to filter documents based on a string contained in a field.
-
-```php
-// Retrieve users with name containing 'John'
-$containsFilteredUsers = User::whereContains('name', 'John')->get();
-```
-
-### Filtering with ``whereContainsAny()``
-
-The ``whereContainsAny()`` method allows you to filter documents based on a list of strings contained in a field.
-
-```php
-// Retrieve users with name containing 'John' or 'Jane'
-$containsAnyFilteredUsers = User::whereContainsAny('name', ['John', 'Jane'])->get();
-```
-
-### Filtering with ``whereDate()``
-
-The ``whereDate()`` method allows you to filter documents based on a date.
-
-Date must be in RFC 3339 format. [Firestore Date Format and data types](https://firebase.google.com/docs/firestore/reference/rest/v1/projects.databases#Database)
-
-Examples: **2014-10-02T15:01:23Z**, **2014-10-02T15:01:23.045123456Z** or **2014-10-02T15:00:00+00:00**
-
-
-```php
-// Retrieve users with birthday on 2014-10-02T15:01:23+05:30
-$dateFilteredUsers = User::whereDate(['birthday', '2014-10-02T15:01:23+05:30'])->get();
-```
-
-
-### Ordering Results with ``orderBy()``, ``orderByDesc()``, and ``orderByAsc()``
-
-
-:::warning
-Make sure you add the filter fields to the Firestore indexes to avoid errors. [Read more about Firestore indexes](https://firebase.google.com/docs/firestore/query-data/indexing).
-
-:::
-
-Sorting the results is often necessary, and you can achieve this using the ``orderBy()``, ``orderByDesc()``, and ``orderByAsc()`` methods:
-
-```php
-// Order users by ID in descending order
-$descOrderedUsers = User::orderByDesc('id')->get();
-
-// Order users by ID in ascending order
-$ascOrderedUsers = User::orderByAsc('id')->get();
-
-// Order users by ID in ascending order
-$orderedUsers = User::orderBy('id', 'ASC')->get();
-
-// Order users by ID in descending order
-$orderedUsers = User::orderBy('id', 'DESC')->get();
-```
-
-You can also combine ordering with filtering for more fine-grained control over your queries.
-
-### Chaining Methods
-
-One of the strengths of the library is the ability to chain methods, allowing you to build complex queries in a readable and expressive way:
-
-```php
-// Retrieve users with age 25, ordered by ID in descending order
-$filteredAndOrderedUsers = User::where(['age', '=', 25])->orderByDesc('id')->get();
-
-```
-
-Chaining methods makes it easy to construct queries dynamically based on your application's needs.
-
-## Determining If Records Exist
-
-Sometimes you may need to determine if any records exist in a collection. The Firestore Eloquent Library provides a convenient ``exists()`` method that you can use to check if any records exist in a collection:
-
-```php
-// Check if any users exist
-$documentId = '1234567890'; // The ID of the document to retrieve
-$user = User::find($documentId); // return null if document not found
-```
-
-```php
-// Check if any users exist
-
-$user = User::where(['user_id', '=', 2])->first(); //return null if document not found
-```
-
-## Limiting Results
-
-The Firestore Eloquent Library provides a convenient ``limit()`` method that you can use to limit the number of documents returned by a query:
-
-```php
-// Retrieve the first 10 users
-$users = User::limit(10)->get();
-```
-
-```php
-// Retrieve the first 10 users with age 25
-$users = User::where(['age', '=', 25])->limit(10)->get();
-```
-
-```php
-// Retrieve the first 10 users with age 25, ordered by ID in descending order
-$users = User::where(['age', '=', 25])->orderByDesc('age')->limit(10)->get();
-```
-
-```php
-// Retrieve the first 10 users with age 25, ordered by ID in descending order
-$users = User::where(['age', '=', 25])->orderByDesc('age')->limit(10)->get();
-```
-
-### Filtering with ``select()``
-
-The ``select()`` method allows you to select specific fields from the documents.
-
-```php
-// Retrieve users with name and age
-$users = User::select(['name', 'age'])->get();
-```
+See the [Query builder](../query-builder.mdx) for filters, ordering, selected fields, aggregates, and write methods.

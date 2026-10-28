@@ -4,10 +4,29 @@ sidebar_position: 5
 
 # Todo
 
-- [x] File Upload.
-- [x] HTML rendered Pagination Links.
-- [ ] Laravel Authentication Methods such as ~`Auth::user()`, `Auth::check()`, `Auth::id()`, `Auth::logout()`~, `Auth::loginUsingId()`, ~`Auth::attempt()`~, `Auth::viaRemember()`, `Auth::once()`, `Auth::onceBasic()`, `Auth::basic()` and `Auth::guard()`.
-- [ ] Livewire Pagination.
-- [ ] Any Feature you wish to add. Feel free to contribute.
-- [ ] Support for core php and any other php frameworks.
-- [ ] Improve the performance of the package.
+## Completed in 4.0
+
+- [x] Authenticated Firestore REST requests with service-account and Application Default Credentials support
+- [x] Firestore emulator configuration
+- [x] Native Laravel `Auth` provider, including sessions, remember tokens, password rehashing, and standard guard APIs
+- [x] Laravel paginator objects and Livewire-compatible links
+- [x] Cursor pagination with stable document-name ordering and previous/next cursors
+- [x] Batched relationship eager loading, nested relationships, and constrained eager loads
+- [x] Cursor-backed `chunk()` and `lazy()` processing
+- [x] Firestore aggregation queries for `count()`, `sum()`, and `avg()`
+- [x] Batched `updateMany()` commits
+- [x] Partial document updates using update masks
+- [x] Safer file uploads with size, MIME, path, and filename controls
+- [x] Concrete static model methods for Intelephense and other PHP language servers
+- [x] Laravel-style `FS::collection()` query builder for model-free reads and writes
+- [x] Firestore transaction API with atomic commit, rollback, read ordering, and contention retries
+
+## Planned
+
+- [ ] More emulator and live-project integration coverage across supported Laravel versions
+- [ ] Index diagnostics and clearer guidance for unsupported Firestore operator combinations
+- [ ] Additional relationship patterns where they fit Firestore's query model
+- [ ] Continued performance profiling against production-like data sets
+- [ ] Standalone core PHP or other-framework support
+
+See [Contributing](./contribute.mdx) before starting an item. Open an issue first for large API changes so the design can be discussed.
